@@ -558,9 +558,9 @@ export default function Home() {
                 </div>
               </div>
               <p className="mt-5 text-sm leading-6 text-steel">
-                Pick any question below or start from the beginning. After you submit your
-                answer, the feedback shows the exact sample answer from the provided M&I text
-                with its page reference.
+                Pick any question below, start from the beginning, or turn on shuffle for a
+                random prompt. Submitted answers are graded with Gemini AI before you review
+                the M&I sample.
               </p>
               <button
                 onClick={() =>
