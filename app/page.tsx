@@ -1322,7 +1322,7 @@ function Feedback({ grade }: { grade: GradeResponse }) {
           <h3 className="text-lg font-black text-black">Structured feedback</h3>
           <p className="text-sm text-steel">
             {grade.gradingMode === "ai"
-              ? "Graded with OpenAI."
+              ? "Graded with Gemini AI."
               : "Fallback concept matching is active."}
           </p>
         </div>
