@@ -4,6 +4,9 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Market Technicals",
   description: "Finance technical interview practice with market-based reasoning.",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
