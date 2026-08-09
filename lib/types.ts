@@ -34,7 +34,7 @@ export type InterviewQuestion = {
   referenceAnswer: string;
   followUpConcept?: string;
   marketScenario?: string;
-  sourceType: "local" | "future-news";
+  sourceType: "local" | "future-news" | "generated";
 };
 
 export type GradeResponse = {

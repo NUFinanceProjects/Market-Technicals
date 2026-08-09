@@ -109,8 +109,8 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-015",
     "sourceNumber": 5,
     "page": 51,
-    "question": "How do you know when a revenue or expense line item should appear on the Income Statement? To appear on the Income Statement, an item must: 1) Correspond 100% to the period shown – Revenue and expenses are based on the delivery of products or services, so an item delivered in Year 1 can count only in Year 1. And if a company buys a factory, it can’t list the entire purchase price on the Income Statement in one year because it will be useful for many years. It corresponds to more than just this period. 2) Affect the business income available to common shareholders (Net Income to",
-    "sampleAnswer": "Common) – If something does not affect the owners of the business, it should not\nappear on the Income Statement.\nThe second point explains why Preferred Dividends appear on the Income Statement: They\nreduce the after-tax profits that could potentially go to common shareholders."
+    "question": "How do you know when a revenue or expense line item should appear on the Income Statement?",
+    "sampleAnswer": "To appear on the Income Statement, an item must:\n1) Correspond 100% to the period shown – Revenue and expenses are based on the delivery of products or services, so an item delivered in Year 1 can count only in Year 1. And if a company buys a factory, it can’t list the entire purchase price on the Income Statement in one year because it will be useful for many years. It corresponds to more than just this period.\n2) Affect the business income available to common shareholders (Net Income to Common) – If something does not affect the owners of the business, it should not appear on the Income Statement.\nThe second point explains why Preferred Dividends appear on the Income Statement: They reduce the after-tax profits that could potentially go to common shareholders."
   },
   {
     "id": "mi-016",

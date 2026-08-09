@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <path d="M74 74h364v364H74z" fill="#000000"/>
+  <path d="M98 98h316v316H98z" fill="#ffffff"/>
+  <text
+    x="256"
+    y="292"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="#000000"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="190"
+    font-weight="700"
+  >MT</text>
+</svg>

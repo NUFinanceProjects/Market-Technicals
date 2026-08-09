@@ -76,26 +76,38 @@ const shuffle = <T,>(items: T[]) =>
     .map(({ item }) => item);
 
 function buildSession(config: SessionConfig) {
-  const filtered = questions.filter((question) => {
+  const filtered = eligibleQuestions(config, true);
+  const fallback = eligibleQuestions(config, false);
+  const source = filtered.length >= config.questionCount ? filtered : fallback;
+  return shuffle(source).slice(0, config.questionCount);
+}
+
+function eligibleQuestions(config: SessionConfig, matchDifficulty: boolean) {
+  return questions.filter((question) => {
     const categoryMatch =
       config.category === "All Categories" || question.category === config.category;
-    const difficultyMatch = question.difficulty === config.difficulty;
+    const difficultyMatch = !matchDifficulty || question.difficulty === config.difficulty;
     const modeMatch =
       config.practiceMode === "Mixed Practice" || question.mode === config.practiceMode;
 
     return categoryMatch && difficultyMatch && modeMatch;
   });
+}
 
-  const fallback = questions.filter((question) => {
-    const categoryMatch =
-      config.category === "All Categories" || question.category === config.category;
-    const modeMatch =
-      config.practiceMode === "Mixed Practice" || question.mode === config.practiceMode;
-    return categoryMatch && modeMatch;
-  });
+function randomEligibleQuestion(config: SessionConfig, excludeIds: string[]) {
+  const strictMatches = eligibleQuestions(config, true).filter(
+    (question) => !excludeIds.includes(question.id),
+  );
 
-  const source = filtered.length >= config.questionCount ? filtered : fallback;
-  return shuffle(source).slice(0, config.questionCount);
+  if (strictMatches.length > 0) {
+    return shuffle(strictMatches)[0];
+  }
+
+  const relaxedMatches = eligibleQuestions(config, false).filter(
+    (question) => !excludeIds.includes(question.id),
+  );
+
+  return shuffle(relaxedMatches)[0];
 }
 
 function bestAndWeakest(answers: SessionAnswer[]) {
@@ -144,6 +156,7 @@ export default function Home() {
   const [behavioralShuffle, setBehavioralShuffle] = useState(false);
   const [behavioralSkipped, setBehavioralSkipped] = useState(0);
   const [isGrading, setIsGrading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState("");
   const [screen, setScreen] = useState<
     | "home"
@@ -231,6 +244,62 @@ export default function Home() {
     setAnswer("");
     setCurrentGrade(null);
     setError("");
+  };
+
+  const skipPracticeQuestion = () => {
+    const excludedIds = sessionQuestions.map((question) => question.id);
+    const replacement = randomEligibleQuestion(config, excludedIds);
+
+    if (!replacement) {
+      setError("No additional bank questions match the current filters yet.");
+      return;
+    }
+
+    setSessionQuestions((previous) =>
+      previous.map((question, index) =>
+        index === currentIndex ? replacement : question,
+      ),
+    );
+    setAnswer("");
+    setCurrentGrade(null);
+    setError("");
+  };
+
+  const generatePracticeQuestion = async () => {
+    setIsGenerating(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/generate-question", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(config),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error ?? "Unable to generate a question.");
+      }
+
+      const generatedQuestion = data.question as InterviewQuestion;
+
+      setSessionQuestions((previous) =>
+        previous.map((question, index) =>
+          index === currentIndex ? generatedQuestion : question,
+        ),
+      );
+      setAnswer("");
+      setCurrentGrade(null);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to generate a question.",
+      );
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const reset = () => {
@@ -562,6 +631,7 @@ export default function Home() {
                 random prompt. Submitted answers are graded with Gemini AI before you review
                 the M&I sample.
               </p>
+              <SourceCredit />
               <button
                 onClick={() =>
                   openMiQuestion(
@@ -686,6 +756,11 @@ export default function Home() {
                     <h3 className="text-lg font-black text-black">
                       Sample answer (M&I 400, p. {currentMiQuestion.page})
                     </h3>
+                    <p className="mt-2 text-xs leading-5 text-steel">
+                      Source: Mergers & Inquisitions / Breaking Into Wall Street 400 Questions
+                      Investment Banking Interview Guide. Market Technicals is an independent
+                      study aid and is not affiliated with or endorsed by M&I or BIWS.
+                    </p>
                     <p className="mt-3 whitespace-pre-line text-sm leading-6 text-ink">
                       {currentMiQuestion.sampleAnswer}
                     </p>
@@ -733,6 +808,7 @@ export default function Home() {
                 not fit your background so they are skipped rather than treated like missed
                 practice.
               </p>
+              <SourceCredit />
               <button
                 onClick={() =>
                   openBehavioralQuestion(
@@ -864,6 +940,11 @@ export default function Home() {
                     <h3 className="text-lg font-black text-black">
                       Sample answer (M&I Behavioral, p. {currentBehavioralQuestion.page})
                     </h3>
+                    <p className="mt-2 text-xs leading-5 text-steel">
+                      Source: Mergers & Inquisitions / Breaking Into Wall Street 400 Questions
+                      Investment Banking Interview Guide. Market Technicals is an independent
+                      study aid and is not affiliated with or endorsed by M&I or BIWS.
+                    </p>
                     <p className="mt-3 whitespace-pre-line text-sm leading-6 text-ink">
                       {currentBehavioralQuestion.sampleAnswer}
                     </p>
@@ -898,8 +979,8 @@ export default function Home() {
                 Prep Resources
               </h2>
               <p className="mt-4 max-w-3xl text-base leading-7 text-steel">
-                A focused resource stack for interview prep: one question bank, two structured
-                course platforms, and three daily market-reading sources.
+                A focused resource stack for interview prep: question banks, core technical
+                reading, structured course platforms, and daily market-reading sources.
               </p>
             </div>
 
@@ -910,8 +991,21 @@ export default function Home() {
               >
                 <ResourceLink
                   href="https://biws-support.s3.us-east-1.amazonaws.com/400-Questions/400-Questions-IB-Interview-Guide-2025.pdf"
-                  label="M&I 400 Questions"
-                  description="The M&I 400 interview guide PDF used for the imported question bank."
+                  label="M&I 400"
+                  description="Technical and behavioral question bank with sample answers."
+                  displayUrl="M&I 400 PDF"
+                />
+              </ResourceGroup>
+
+              <ResourceGroup
+                title="Core Technical Textbook"
+                description="Use this when you want a deeper foundation in valuation, LBOs, M&A, and IPO mechanics."
+              >
+                <ResourceLink
+                  href="https://www.wiley.com/en-us/shop/general-finance-investments/investment-banking-valuation-lbos-m-a-and-ipos-3rd-edition-p-9781119706588"
+                  label="Rosenbaum & Pearl"
+                  description="Gold-standard IB prep textbook for valuation, LBOs, M&A, and IPOs."
+                  displayUrl="wiley.com"
                 />
               </ResourceGroup>
 
@@ -1052,13 +1146,13 @@ export default function Home() {
                     Question {currentIndex + 1} / {sessionQuestions.length}
                   </span>
                   <span className="border border-line px-2 py-1">
-                    {currentQuestion.category}
+                    Type: {currentQuestion.category}
                   </span>
                   <span className="border border-line px-2 py-1">
-                    {currentQuestion.difficulty}
+                    Level: {currentQuestion.difficulty}
                   </span>
                   <span className="border border-line px-2 py-1">
-                    {currentQuestion.mode}
+                    Mode: {currentQuestion.mode}
                   </span>
                 </div>
               </div>
@@ -1090,23 +1184,50 @@ export default function Home() {
 
               <div className="mt-4 flex flex-col gap-3 sm:flex-row">
                 {!currentGrade ? (
-                  <button
-                    onClick={submitAnswer}
-                    disabled={isGrading}
-                    className="inline-flex h-12 items-center justify-center gap-2 bg-mint px-5 font-black text-ink transition hover:bg-[#89a9cf] disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {isGrading ? (
-                      <>
-                        <Loader2 className="animate-spin" size={18} />
-                        Grading
-                      </>
-                    ) : (
-                      <>
-                        Submit Answer
-                        <ArrowRight size={18} />
-                      </>
-                    )}
-                  </button>
+                  <>
+                    <button
+                      onClick={submitAnswer}
+                      disabled={isGrading || isGenerating}
+                      className="inline-flex h-12 items-center justify-center gap-2 bg-mint px-5 font-black text-ink transition hover:bg-[#89a9cf] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isGrading ? (
+                        <>
+                          <Loader2 className="animate-spin" size={18} />
+                          Grading
+                        </>
+                      ) : (
+                        <>
+                          Submit Answer
+                          <ArrowRight size={18} />
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={skipPracticeQuestion}
+                      disabled={isGrading || isGenerating}
+                      className="inline-flex h-12 items-center justify-center gap-2 border border-line bg-white px-5 font-black text-ink transition hover:border-mint disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      Skip
+                      <ArrowRight size={18} />
+                    </button>
+                    <button
+                      onClick={generatePracticeQuestion}
+                      disabled={isGrading || isGenerating}
+                      className="inline-flex h-12 items-center justify-center gap-2 border border-line bg-white px-5 font-black text-ink transition hover:border-mint disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isGenerating ? (
+                        <>
+                          <Loader2 className="animate-spin" size={18} />
+                          Generating
+                        </>
+                      ) : (
+                        <>
+                          Generate
+                          <RefreshCcw size={18} />
+                        </>
+                      )}
+                    </button>
+                  </>
                 ) : (
                   <button
                     onClick={nextQuestion}
@@ -1284,6 +1405,24 @@ function ShuffleToggle({
   );
 }
 
+function SourceCredit() {
+  return (
+    <div className="mt-5 border border-line bg-white p-3 text-xs leading-5 text-steel">
+      Source material credited to{" "}
+      <a
+        href="https://mergersandinquisitions.com/400-questions-investment-banking/"
+        target="_blank"
+        rel="noreferrer"
+        className="font-bold text-ink underline underline-offset-2"
+      >
+        Mergers & Inquisitions / Breaking Into Wall Street
+      </a>
+      . Market Technicals is an independent study aid and is not affiliated with, sponsored by,
+      or endorsed by M&I or BIWS. AI feedback is generated separately from your submitted answer.
+    </div>
+  );
+}
+
 function BankFeedback({ grade }: { grade: GradeResponse }) {
   return (
     <div className="mt-6 border border-line bg-white p-4">
@@ -1424,21 +1563,27 @@ function ResourceLink({
   href,
   label,
   description,
+  displayUrl,
 }: {
   href: string;
   label: string;
   description: string;
+  displayUrl?: string;
 }) {
+  const urlLabel = displayUrl ?? href.replace(/^https?:\/\//, "").replace(/\/$/, "");
+
   return (
     <a
       href={href}
       target="_blank"
       rel="noreferrer"
-      className="block min-h-36 border border-line bg-panel p-4 transition hover:border-mint"
+      className="flex min-h-36 flex-col justify-center border border-line bg-panel p-4 transition hover:border-mint"
     >
       <div className="text-lg font-black text-black">{label}</div>
       <p className="mt-1 text-sm leading-6 text-steel">{description}</p>
-      <div className="mt-2 break-all font-sans text-xs text-steel">{href}</div>
+      <div className="mt-2 font-sans text-xs text-steel">
+        {urlLabel}
+      </div>
     </a>
   );
 }
