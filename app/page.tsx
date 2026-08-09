@@ -1392,15 +1392,16 @@ function ShuffleToggle({
   return (
     <button
       onClick={onClick}
-      className={`flex h-10 w-10 items-center justify-center border transition ${
+      className={`inline-flex h-11 items-center justify-center gap-2 border-2 px-3 text-sm font-black transition ${
         active
-          ? "border-mint bg-mint text-ink"
-          : "border-line bg-white text-steel hover:border-mint"
+          ? "border-black bg-mint text-black shadow-terminal"
+          : "border-line bg-white text-steel hover:border-mint hover:text-ink"
       }`}
       title={active ? "Shuffle on" : "Shuffle off"}
       aria-label={active ? "Turn shuffle off" : "Turn shuffle on"}
     >
       <Shuffle size={18} />
+      <span>{active ? "Shuffle On" : "Shuffle"}</span>
     </button>
   );
 }
