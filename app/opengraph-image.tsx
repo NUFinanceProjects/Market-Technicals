@@ -12,22 +12,65 @@ export default function Image() {
     (
       <div
         style={{
-          background: "#7297c4",
+          background: "#f7f7f4",
           color: "#000",
           display: "flex",
+          flexDirection: "column",
           height: "100%",
-          padding: 64,
           width: "100%",
         }}
       >
         <div
           style={{
-            background: "#f7f7f4",
-            border: "2px solid #000",
+            alignItems: "center",
+            background: "#7297c4",
             display: "flex",
-            height: "100%",
-            padding: 44,
-            width: "100%",
+            height: 124,
+            justifyContent: "space-between",
+            padding: "0 58px",
+          }}
+        >
+          <div
+            style={{
+              alignItems: "center",
+              background: "#fff",
+              border: "2px solid #000",
+              display: "flex",
+              height: 76,
+              justifyContent: "center",
+              width: 76,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "Georgia, Times New Roman, serif",
+                fontSize: 34,
+                fontWeight: 700,
+              }}
+            >
+              MT
+            </div>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+              fontSize: 25,
+              fontWeight: 500,
+              gap: 34,
+            }}
+          >
+            <span>Technical Questions</span>
+            <span>Market Scenarios</span>
+            <span>Mixed Practice</span>
+            <span>Prep</span>
+          </div>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flex: 1,
+            padding: "56px 60px 46px",
           }}
         >
           <div
@@ -40,104 +83,109 @@ export default function Image() {
           >
             <div
               style={{
-                alignItems: "flex-start",
                 display: "flex",
-                justifyContent: "space-between",
-                width: "100%",
+                flexDirection: "column",
+                gap: 26,
+              }}
+            >
+              <div
+                style={{
+                  borderBottom: "2px solid #000",
+                  display: "flex",
+                  fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                  fontSize: 22,
+                  fontWeight: 600,
+                  letterSpacing: 0,
+                  paddingBottom: 14,
+                  textTransform: "uppercase",
+                  width: 360,
+                }}
+              >
+                Interview intelligence
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 18,
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: "Georgia, Times New Roman, serif",
+                    fontSize: 104,
+                    fontWeight: 400,
+                    letterSpacing: 0,
+                    lineHeight: 0.9,
+                    maxWidth: 920,
+                  }}
+                >
+                  Market Technicals
+                </div>
+                <div
+                  style={{
+                    fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                    fontSize: 32,
+                    fontWeight: 400,
+                    lineHeight: 1.28,
+                    maxWidth: 890,
+                  }}
+                >
+                  Finance technical interview practice across accounting,
+                  valuation, M&amp;A, LBOs, capital markets, and current events.
+                </div>
+              </div>
+            </div>
+            <div
+              style={{
+                alignItems: "stretch",
+                display: "flex",
+                gap: 14,
+                marginTop: -18,
               }}
             >
               <div
                 style={{
                   alignItems: "center",
                   background: "#fff",
-                  border: "2px solid #000",
+                  border: "1.5px solid #000",
                   display: "flex",
-                  height: 118,
+                  height: 72,
                   justifyContent: "center",
-                  width: 118,
+                  padding: "0 26px",
                 }}
               >
-                <div
+                <span
                   style={{
                     fontFamily: "Georgia, Times New Roman, serif",
-                    fontSize: 52,
+                    fontSize: 24,
                     fontWeight: 700,
                   }}
                 >
-                  MT
-                </div>
+                  400 M&amp;I Q&amp;A pairs
+                </span>
               </div>
-              <div
-                style={{
-                  borderTop: "2px solid #000",
-                  display: "flex",
-                  fontFamily: "Arial, Helvetica, sans-serif",
-                  fontSize: 24,
-                  fontWeight: 700,
-                  gap: 28,
-                  paddingTop: 18,
-                }}
-              >
-                <span>Accounting</span>
-                <span>Valuation</span>
-                <span>M&amp;A</span>
-                <span>LBOs</span>
-                <span>Markets</span>
-              </div>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 24,
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: "Georgia, Times New Roman, serif",
-                  fontSize: 94,
-                  fontWeight: 400,
-                  letterSpacing: 0,
-                  lineHeight: 0.9,
-                  maxWidth: 860,
-                }}
-              >
-                Market Technicals
-              </div>
-              <div
-                style={{
-                  background: "#7297c4",
-                  height: 14,
-                  width: 320,
-                }}
-              />
-              <div
-                style={{
-                  fontFamily: "Arial, Helvetica, sans-serif",
-                  fontSize: 32,
-                  fontWeight: 500,
-                  lineHeight: 1.25,
-                  maxWidth: 900,
-                }}
-              >
-                Finance technical interview preparation that connects technicals,
-                capital markets, and realistic spoken-answer practice.
-              </div>
-            </div>
-            <div
-              style={{
-                alignItems: "center",
-                borderTop: "1px solid #000",
-                display: "flex",
-                fontFamily: "Arial, Helvetica, sans-serif",
-                fontSize: 24,
-                fontWeight: 700,
-                justifyContent: "space-between",
-                paddingTop: 24,
-              }}
-            >
-              <span>M&amp;I 400 + AI Feedback</span>
-              <span>market-technicals.com</span>
+              {["AI feedback", "Behavioral prep", "Market scenarios"].map(
+                (label) => (
+                  <div
+                    key={label}
+                    style={{
+                      alignItems: "center",
+                      background: "#fff",
+                      border: "1.5px solid #000",
+                      display: "flex",
+                      fontFamily: "Georgia, Times New Roman, serif",
+                      fontSize: 24,
+                      fontWeight: 700,
+                      height: 72,
+                      justifyContent: "center",
+                      padding: "0 26px",
+                    }}
+                  >
+                    {label}
+                  </div>
+                ),
+              )}
             </div>
           </div>
         </div>
