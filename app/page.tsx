@@ -12,7 +12,8 @@ import {
   Shuffle,
   Newspaper,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { behavioralQuestions } from "@/lib/behavioral-questions";
 import { mi400Questions } from "@/lib/mi-400-questions";
 import { questions } from "@/lib/questions";
@@ -28,6 +29,16 @@ import {
 } from "@/lib/types";
 
 type CategoryChoice = Category | "All Categories";
+type Screen =
+  | "home"
+  | "setup"
+  | "quiz"
+  | "results"
+  | "mi"
+  | "miQuiz"
+  | "behavioral"
+  | "behavioralQuiz"
+  | "prep";
 type SessionConfig = {
   category: CategoryChoice;
   difficulty: Difficulty;
@@ -40,6 +51,30 @@ const defaultConfig: SessionConfig = {
   difficulty: "Intermediate",
   practiceMode: "Mixed Practice",
   questionCount: 5,
+};
+
+const screenRoutes: Record<Screen, string> = {
+  home: "/",
+  setup: "/MixedPractice",
+  quiz: "/MixedPractice/session",
+  results: "/MixedPractice/results",
+  mi: "/MI400",
+  miQuiz: "/MI400/practice",
+  behavioral: "/BehavioralPractice",
+  behavioralQuiz: "/BehavioralPractice/practice",
+  prep: "/Prep",
+};
+
+const modeRoutes: Record<PracticeMode, string> = {
+  "Technical Questions": "/TechnicalQuestions",
+  "Market Scenarios": "/MarketScenarios",
+  "Mixed Practice": "/MixedPractice",
+};
+
+const routeModes: Record<string, PracticeMode> = {
+  "/technicalquestions": "Technical Questions",
+  "/marketscenarios": "Market Scenarios",
+  "/mixedpractice": "Mixed Practice",
 };
 
 const modeDetails: Record<
@@ -135,6 +170,9 @@ function bestAndWeakest(answers: SessionAnswer[]) {
 }
 
 export default function Home() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const navRef = useRef<HTMLElement>(null);
   const [config, setConfig] = useState<SessionConfig>(defaultConfig);
   const [sessionQuestions, setSessionQuestions] = useState<InterviewQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -158,17 +196,70 @@ export default function Home() {
   const [isGrading, setIsGrading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState("");
-  const [screen, setScreen] = useState<
-    | "home"
-    | "setup"
-    | "quiz"
-    | "results"
-    | "mi"
-    | "miQuiz"
-    | "behavioral"
-    | "behavioralQuiz"
-    | "prep"
-  >("home");
+  const [screen, setScreen] = useState<Screen>("home");
+
+  const goTo = (nextScreen: Screen, nextMode?: PracticeMode) => {
+    const practiceRoute = modeRoutes[nextMode ?? config.practiceMode];
+    const route =
+      nextScreen === "setup"
+        ? practiceRoute
+        : nextScreen === "quiz"
+          ? `${practiceRoute}/Session`
+          : nextScreen === "results"
+            ? `${practiceRoute}/Results`
+            : screenRoutes[nextScreen];
+
+    if (nextMode) {
+      setConfig((current) => ({ ...current, practiceMode: nextMode }));
+    }
+
+    setScreen(nextScreen);
+    router.push(route);
+  };
+
+  useEffect(() => {
+    const normalizedPath = pathname.toLowerCase();
+    const practiceBase = Object.keys(routeModes).find(
+      (route) => normalizedPath === route || normalizedPath.startsWith(`${route}/`),
+    );
+    const routeMode = practiceBase ? routeModes[practiceBase] : undefined;
+    let nextScreen: Screen | null = null;
+
+    if (routeMode) {
+      if (normalizedPath.endsWith("/session")) {
+        nextScreen = "quiz";
+      } else if (normalizedPath.endsWith("/results")) {
+        nextScreen = "results";
+      } else {
+        nextScreen = "setup";
+      }
+    } else if (normalizedPath.startsWith("/mi400/practice")) {
+      nextScreen = "miQuiz";
+    } else if (normalizedPath === "/mi400") {
+      nextScreen = "mi";
+    } else if (normalizedPath.startsWith("/behavioralpractice/practice")) {
+      nextScreen = "behavioralQuiz";
+    } else if (normalizedPath === "/behavioralpractice") {
+      nextScreen = "behavioral";
+    } else if (normalizedPath === "/prep") {
+      nextScreen = "prep";
+    } else if (normalizedPath === "/") {
+      nextScreen = "home";
+    }
+
+    navRef.current?.scrollTo({ left: 0 });
+
+    if (nextScreen || routeMode) {
+      queueMicrotask(() => {
+        if (routeMode) {
+          setConfig((current) => ({ ...current, practiceMode: routeMode }));
+        }
+        if (nextScreen) {
+          setScreen(nextScreen);
+        }
+      });
+    }
+  }, [pathname]);
 
   const currentQuestion = sessionQuestions[currentIndex];
   const currentMiQuestion = mi400Questions[miIndex];
@@ -193,7 +284,7 @@ export default function Home() {
     setCurrentGrade(null);
     setAnswers([]);
     setError("");
-    setScreen("quiz");
+    goTo("quiz");
   };
 
   const submitAnswer = async () => {
@@ -236,7 +327,7 @@ export default function Home() {
 
   const nextQuestion = () => {
     if (currentIndex + 1 >= sessionQuestions.length) {
-      setScreen("results");
+      goTo("results");
       return;
     }
 
@@ -303,7 +394,7 @@ export default function Home() {
   };
 
   const reset = () => {
-    setScreen("home");
+    goTo("home");
     setAnswer("");
     setCurrentGrade(null);
     setError("");
@@ -315,7 +406,7 @@ export default function Home() {
     setShowMiSample(false);
     setMiGrade(null);
     setError("");
-    setScreen("miQuiz");
+    goTo("miQuiz");
   };
 
   const nextMiQuestion = () => {
@@ -383,7 +474,7 @@ export default function Home() {
     setShowBehavioralSample(false);
     setBehavioralGrade(null);
     setError("");
-    setScreen("behavioralQuiz");
+    goTo("behavioralQuiz");
   };
 
   const nextBehavioralQuestion = () => {
@@ -474,18 +565,18 @@ export default function Home() {
             <br />
             Technicals
           </button>
-          <nav className="flex flex-1 items-center justify-end gap-5 overflow-x-auto font-sans text-[1.02rem] font-medium lg:justify-center lg:gap-8">
+          <nav
+            ref={navRef}
+            className="flex flex-1 items-center justify-start gap-5 overflow-x-auto font-sans text-[1.02rem] font-medium lg:justify-center lg:gap-8 [&_button]:shrink-0 [&_button]:whitespace-nowrap"
+          >
             <button
-              onClick={() => setScreen("mi")}
+              onClick={() => goTo("mi")}
               className={screen === "mi" || screen === "miQuiz" ? "underline decoration-2 underline-offset-4" : "hover:underline"}
             >
               M&I 400 Questions
             </button>
             <button
-              onClick={() => {
-                setConfig({ ...config, practiceMode: "Technical Questions" });
-                setScreen("setup");
-              }}
+              onClick={() => goTo("setup", "Technical Questions")}
               className={
                 isPracticeScreen && config.practiceMode === "Technical Questions"
                   ? "underline decoration-2 underline-offset-4"
@@ -495,10 +586,7 @@ export default function Home() {
               Technical Questions
             </button>
             <button
-              onClick={() => {
-                setConfig({ ...config, practiceMode: "Market Scenarios" });
-                setScreen("setup");
-              }}
+              onClick={() => goTo("setup", "Market Scenarios")}
               className={
                 isPracticeScreen && config.practiceMode === "Market Scenarios"
                   ? "underline decoration-2 underline-offset-4"
@@ -508,10 +596,7 @@ export default function Home() {
               Market Scenarios
             </button>
             <button
-              onClick={() => {
-                setConfig({ ...config, practiceMode: "Mixed Practice" });
-                setScreen("setup");
-              }}
+              onClick={() => goTo("setup", "Mixed Practice")}
               className={
                 isPracticeScreen && config.practiceMode === "Mixed Practice"
                   ? "underline decoration-2 underline-offset-4"
@@ -521,7 +606,7 @@ export default function Home() {
               Mixed Practice
             </button>
             <button
-              onClick={() => setScreen("behavioral")}
+              onClick={() => goTo("behavioral")}
               className={
                 screen === "behavioral" || screen === "behavioralQuiz"
                   ? "underline decoration-2 underline-offset-4"
@@ -531,7 +616,7 @@ export default function Home() {
               Behavioral Practice
             </button>
             <button
-              onClick={() => setScreen("prep")}
+              onClick={() => goTo("prep")}
               className={
                 screen === "prep"
                   ? "underline decoration-2 underline-offset-4"
@@ -568,46 +653,37 @@ export default function Home() {
               icon={<BookOpen size={22} />}
               title="M&I 400 Questions"
               description="Work through the technical interview guide question bank with exact sample answers and page references."
-              onClick={() => setScreen("mi")}
+              onClick={() => goTo("mi")}
             />
             <HomeOption
               icon={<FileQuestion size={22} />}
               title="Technical Questions"
               description="Classic accounting, valuation, DCF, M&A, LBO, and capital markets technical practice."
-              onClick={() => {
-                setConfig({ ...config, practiceMode: "Technical Questions" });
-                setScreen("setup");
-              }}
+              onClick={() => goTo("setup", "Technical Questions")}
             />
             <HomeOption
               icon={<LineChart size={22} />}
               title="Market Scenarios"
               description="Practice connecting market events to companies, valuation, deals, and capital markets."
-              onClick={() => {
-                setConfig({ ...config, practiceMode: "Market Scenarios" });
-                setScreen("setup");
-              }}
+              onClick={() => goTo("setup", "Market Scenarios")}
             />
             <HomeOption
               icon={<RefreshCcw size={22} />}
               title="Mixed Practice"
               description="Blend technical questions and market-scenario prompts for a more realistic interview flow."
-              onClick={() => {
-                setConfig({ ...config, practiceMode: "Mixed Practice" });
-                setScreen("setup");
-              }}
+              onClick={() => goTo("setup", "Mixed Practice")}
             />
             <HomeOption
               icon={<MessageSquareText size={22} />}
               title="Behavioral Practice"
               description="Prepare fit, story, leadership, weakness, and deal-experience answers from the M&I behavioral set."
-              onClick={() => setScreen("behavioral")}
+              onClick={() => goTo("behavioral")}
             />
             <HomeOption
               icon={<Newspaper size={22} />}
               title="Prep Resources"
               description="Open the curated resources list for question banks, course prep, and market reading."
-              onClick={() => setScreen("prep")}
+              onClick={() => goTo("prep")}
             />
           </section>
         )}
@@ -740,7 +816,7 @@ export default function Home() {
                       <ArrowRight size={18} />
                     </button>
                     <button
-                      onClick={() => setScreen("mi")}
+                      onClick={() => goTo("mi")}
                       className="inline-flex h-12 items-center justify-center border border-line bg-white px-5 font-black text-ink transition hover:border-mint"
                     >
                       Back to M&I Bank
@@ -924,7 +1000,7 @@ export default function Home() {
                       <ArrowRight size={18} />
                     </button>
                     <button
-                      onClick={() => setScreen("behavioral")}
+                      onClick={() => goTo("behavioral")}
                       className="inline-flex h-12 items-center justify-center border border-line bg-white px-5 font-black text-ink transition hover:border-mint"
                     >
                       Back to Behavioral Bank
