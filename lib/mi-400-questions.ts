@@ -60,8 +60,8 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-008",
     "sourceNumber": 8,
     "page": 48,
-    "question": "What does the internal rate of return (IRR) mean? How do you calculate it? In technical terms, the IRR represents the Discount Rate at which the Net Present Value of an investment equals 0.",
-    "sampleAnswer": "Colloquially, you can think of it as “the effective compounded rate of return on an investment.”\nFor example, if you invest $1,000 today and end up with $2,000 after 5 years, the IRR\nrepresents the return you’d have to earn on that $1,000, compounded each year, to reach\n$2,000 in 5 years.\nIt’s 14.9% in this example, which you can verify with a calculator or Excel.\nTo calculate the IRR, enter the upfront investment as a negative in Excel and the future cash\nflows and sale value as positives and apply the IRR function to the whole range."
+    "question": "What does the internal rate of return (IRR) mean? How do you calculate it?",
+    "sampleAnswer": "In technical terms, the IRR represents the Discount Rate at which the Net Present Value of an investment equals 0.\nColloquially, you can think of it as “the effective compounded rate of return on an investment.”\nFor example, if you invest $1,000 today and end up with $2,000 after 5 years, the IRR\nrepresents the return you’d have to earn on that $1,000, compounded each year, to reach\n$2,000 in 5 years.\nIt’s 14.9% in this example, which you can verify with a calculator or Excel.\nTo calculate the IRR, enter the upfront investment as a negative in Excel and the future cash\nflows and sale value as positives and apply the IRR function to the whole range."
   },
   {
     "id": "mi-009",
@@ -88,8 +88,8 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-012",
     "sourceNumber": 2,
     "page": 50,
-    "question": "How do the financial statements link together? To link the statements, make Net Income from the Income Statement the top line of the Cash Flow Statement.",
-    "sampleAnswer": "Then, adjust this Net Income number for non-cash items such as Depreciation & Amortization.\nNext, reflect changes to operational Balance Sheet items such as Accounts Receivable, which\nmay increase or reduce the company’s cash flow.\nThis gets you to Cash Flow from Operations.\nNext, include the investing and financing activities, which may increase or reduce cash flow, and\nsum up Cash Flow from Operations, Investing, and Financing to get the net change in cash and\nending cash balance.\nCash at the bottom of the CFS becomes Cash on the Balance Sheet, and Net Income, Stock\nIssuances/Repurchases, Stock-Based Compensation, and Dividends link into Common\nShareholders’ Equity.\nNext, link the separate line items on the CFS to their corresponding Balance Sheet line items;\nfor example, CapEx and Depreciation link into Net PP&E.\nOn the Assets side of the Balance Sheet, subtract CFS links; add them on the L&E side.\nFinally, check that Assets equals Liabilities plus Equity at the end."
+    "question": "How do the financial statements link together?",
+    "sampleAnswer": "To link the statements, make Net Income from the Income Statement the top line of the Cash Flow Statement.\nThen, adjust this Net Income number for non-cash items such as Depreciation & Amortization.\nNext, reflect changes to operational Balance Sheet items such as Accounts Receivable, which\nmay increase or reduce the company’s cash flow.\nThis gets you to Cash Flow from Operations.\nNext, include the investing and financing activities, which may increase or reduce cash flow, and\nsum up Cash Flow from Operations, Investing, and Financing to get the net change in cash and\nending cash balance.\nCash at the bottom of the CFS becomes Cash on the Balance Sheet, and Net Income, Stock\nIssuances/Repurchases, Stock-Based Compensation, and Dividends link into Common\nShareholders’ Equity.\nNext, link the separate line items on the CFS to their corresponding Balance Sheet line items;\nfor example, CapEx and Depreciation link into Net PP&E.\nOn the Assets side of the Balance Sheet, subtract CFS links; add them on the L&E side.\nFinally, check that Assets equals Liabilities plus Equity at the end."
   },
   {
     "id": "mi-013",
@@ -102,8 +102,8 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-014",
     "sourceNumber": 4,
     "page": 51,
-    "question": "How might the financial statements of a company in the U.K. or Germany be different from those of a company based in the U.S.? Income Statements and Balance Sheets tend to be similar across different regions, but companies that use IFRS often start the Cash Flow Statement with something other than Net Income: Operating Income, Pre-Tax Income, or, if they are using the Direct Method, Cash Received and Cash Paid.",
-    "sampleAnswer": "IFRS-based companies also tend to place items in more “random” locations on the CFS, so you\nmay need to rearrange it.\nFinally, the Operating Lease Expense is split into Interest and Depreciation elements under IFRS,\nbut it’s recorded as a simple Rental Expense under U.S. GAAP."
+    "question": "How might the financial statements of a company in the U.K. or Germany be different from those of a company based in the U.S.?",
+    "sampleAnswer": "Income Statements and Balance Sheets tend to be similar across different regions, but companies that use IFRS often start the Cash Flow Statement with something other than Net Income: Operating Income, Pre-Tax Income, or, if they are using the Direct Method, Cash Received and Cash Paid.\nIFRS-based companies also tend to place items in more “random” locations on the CFS, so you\nmay need to rearrange it.\nFinally, the Operating Lease Expense is split into Interest and Depreciation elements under IFRS,\nbut it’s recorded as a simple Rental Expense under U.S. GAAP."
   },
   {
     "id": "mi-015",
@@ -333,8 +333,8 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-047",
     "sourceNumber": 1,
     "page": 71,
-    "question": "What do Equity Value and Enterprise Value MEAN? Don’t explain how you calculate them – tell me what they mean! Equity Value represents the value of EVERYTHING a company has (its Net Assets) but only to the EQUITY INVESTORS (i.e., the common shareholders).",
-    "sampleAnswer": "Enterprise Value represents the value of the company’s CORE BUSINESS OPERATIONS (its Net\nOperating Assets) but to ALL INVESTORS (Equity, Debt, Preferred, and possibly others)."
+    "question": "What do Equity Value and Enterprise Value MEAN? Don’t explain how you calculate them – tell me what they mean!",
+    "sampleAnswer": "Equity Value represents the value of EVERYTHING a company has (its Net Assets) but only to the EQUITY INVESTORS (i.e., the common shareholders).\nEnterprise Value represents the value of the company’s CORE BUSINESS OPERATIONS (its Net\nOperating Assets) but to ALL INVESTORS (Equity, Debt, Preferred, and possibly others)."
   },
   {
     "id": "mi-048",
@@ -368,8 +368,8 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-052",
     "sourceNumber": 6,
     "page": 73,
-    "question": "Let’s say you have a company’s Diluted Equity Value. How do you move from Equity Value to Enterprise Value? At a basic level, Enterprise Value = Equity Value – Cash + Debt + Preferred Stock + Noncontrolling Interests, so you could say that in an interview and be fine.",
-    "sampleAnswer": "The more technical answer is that you should take Equity Value and subtract Non-Operating\nAssets and add Liability & Equity lines that represent other investor groups beyond the\ncommon shareholders.\nExamples of Non-Operating Assets include Cash, Investments, Equity Investments (Associate\nCompanies), Assets Held for Sale, and Net Operating Losses.\nExamples of L&E lines representing other investor groups include Debt, Preferred Stock,\nUnderfunded Pensions, Noncontrolling Interests, and sometimes Leases (it’s complicated)."
+    "question": "Let’s say you have a company’s Diluted Equity Value. How do you move from Equity Value to Enterprise Value?",
+    "sampleAnswer": "At a basic level, Enterprise Value = Equity Value – Cash + Debt + Preferred Stock + Noncontrolling Interests, so you could say that in an interview and be fine.\nThe more technical answer is that you should take Equity Value and subtract Non-Operating\nAssets and add Liability & Equity lines that represent other investor groups beyond the\ncommon shareholders.\nExamples of Non-Operating Assets include Cash, Investments, Equity Investments (Associate\nCompanies), Assets Held for Sale, and Net Operating Losses.\nExamples of L&E lines representing other investor groups include Debt, Preferred Stock,\nUnderfunded Pensions, Noncontrolling Interests, and sometimes Leases (it’s complicated)."
   },
   {
     "id": "mi-053",
@@ -382,8 +382,8 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-054",
     "sourceNumber": 8,
     "page": 73,
-    "question": "Can you explain the proper treatment of pensions in Enterprise Value? Only Defined-Benefit Pension plans factor in because Defined-Contribution Plans do not appear on the Balance Sheet.",
-    "sampleAnswer": "You should add the Unfunded or Underfunded portion, i.e., MAX(0, Pension Liabilities –\nPension Assets), in the TEV bridge because the employees represent another investor group\nwhen they are promised future payments.\nThey agree to lower pay and benefits today in exchange for fixed payments once they retire,\nand the company must fund the pension and invest the funds appropriately.\nIf contributions into the pension plan are tax-deductible, you should multiply the unfunded\nportion by (1 – Tax Rate) in the Enterprise Value bridge."
+    "question": "Can you explain the proper treatment of pensions in Enterprise Value?",
+    "sampleAnswer": "Only Defined-Benefit Pension plans factor in because Defined-Contribution Plans do not appear on the Balance Sheet.\nYou should add the Unfunded or Underfunded portion, i.e., MAX(0, Pension Liabilities –\nPension Assets), in the TEV bridge because the employees represent another investor group\nwhen they are promised future payments.\nThey agree to lower pay and benefits today in exchange for fixed payments once they retire,\nand the company must fund the pension and invest the funds appropriately.\nIf contributions into the pension plan are tax-deductible, you should multiply the unfunded\nportion by (1 – Tax Rate) in the Enterprise Value bridge."
   },
   {
     "id": "mi-055",
@@ -494,15 +494,15 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-070",
     "sourceNumber": 12,
     "page": 80,
-    "question": "A company has 10,000 shares outstanding and a current share price of $20.00. It also has 100 options at an exercise price of $10.00, 50 Restricted Stock Units (RSUs), and 100 convertible bonds at a conversion price of $10.00 and a par value of $100. What is its Diluted Equity Value? For this type of question, you should ask to write down the numbers.",
-    "sampleAnswer": "Since the options are in-the-money, you assume they get exercised, so 100 new shares are\ncreated.\nThe company receives 100 * $10.00, or $1,000, in proceeds. Its share price is $20.00, so it can\nrepurchase 50 shares with these proceeds. There are now 50 net additional shares outstanding.\nYou add the 50 RSUs as if they were common shares, so now there’s a total of 100 additional\nshares outstanding.\nThe company’s share price of $20.00 exceeds the conversion price of $10.00, so the convertible\nbonds can convert into shares.\nDivide the par value by the conversion price to determine the shares per bond:\n$100 / $10.00 = 10 new shares per bond\nThere are 100 individual convertible bonds, so they create 100 * 10 = 1,000 new shares.\nThese changes create 1,100 additional shares, so the diluted share count is now 11,100, and the\nDiluted Equity Value is 11,100 * $20.00, or $222,000.\nValuation Methodologies\nThese questions are high-level, but many\ncandidates don’t understand the point of\nvaluation.\nYou can’t answer the advanced questions\nwithout knowing that, so don’t dismiss this\ncategory as “too basic” – even if you have\nsignificant work experience.\nThere are dozens of valuation\nmethodologies, but in real-life interviews, bankers tend to focus on comparable public\ncompanies, precedent transactions, and the DCF.\nThis section and the next one cover the first two categories, and the two sections after that\ncover the DCF.\n• Interview Guide – Valuation | Quiz Questions\n• Core Financial Modeling – Valuation Module"
+    "question": "A company has 10,000 shares outstanding and a current share price of $20.00. It also has 100 options at an exercise price of $10.00, 50 Restricted Stock Units (RSUs), and 100 convertible bonds at a conversion price of $10.00 and a par value of $100. What is its Diluted Equity Value?",
+    "sampleAnswer": "For this type of question, you should ask to write down the numbers.\nSince the options are in-the-money, you assume they get exercised, so 100 new shares are\ncreated.\nThe company receives 100 * $10.00, or $1,000, in proceeds. Its share price is $20.00, so it can\nrepurchase 50 shares with these proceeds. There are now 50 net additional shares outstanding.\nYou add the 50 RSUs as if they were common shares, so now there’s a total of 100 additional\nshares outstanding.\nThe company’s share price of $20.00 exceeds the conversion price of $10.00, so the convertible\nbonds can convert into shares.\nDivide the par value by the conversion price to determine the shares per bond:\n$100 / $10.00 = 10 new shares per bond\nThere are 100 individual convertible bonds, so they create 100 * 10 = 1,000 new shares.\nThese changes create 1,100 additional shares, so the diluted share count is now 11,100, and the\nDiluted Equity Value is 11,100 * $20.00, or $222,000.\nValuation Methodologies\nThese questions are high-level, but many\ncandidates don’t understand the point of\nvaluation.\nYou can’t answer the advanced questions\nwithout knowing that, so don’t dismiss this\ncategory as “too basic” – even if you have\nsignificant work experience.\nThere are dozens of valuation\nmethodologies, but in real-life interviews, bankers tend to focus on comparable public\ncompanies, precedent transactions, and the DCF.\nThis section and the next one cover the first two categories, and the two sections after that\ncover the DCF.\n• Interview Guide – Valuation | Quiz Questions\n• Core Financial Modeling – Valuation Module"
   },
   {
     "id": "mi-071",
     "sourceNumber": 1,
     "page": 81,
-    "question": "Public companies already have Market Caps and Share Prices. Why do you need to “value them” at all? You already know how much they’re worth.",
-    "sampleAnswer": "Because a company’s Market Cap and Share Price reflect its Current Value according to “the\nmarket as a whole” – but the market might be wrong!\nYou value companies to see if the market’s views are correct and whether a company’s value\nmight change based on your views.\nIt’s like going home shopping, finding a house with a list price of $500K, but then negotiating a\nlower price because you believe it is worth only $450K based on your research."
+    "question": "Public companies already have Market Caps and Share Prices. Why do you need to “value them” at all?",
+    "sampleAnswer": "You already know how much they’re worth.\nBecause a company’s Market Cap and Share Price reflect its Current Value according to “the\nmarket as a whole” – but the market might be wrong!\nYou value companies to see if the market’s views are correct and whether a company’s value\nmight change based on your views.\nIt’s like going home shopping, finding a house with a list price of $500K, but then negotiating a\nlower price because you believe it is worth only $450K based on your research."
   },
   {
     "id": "mi-072",
@@ -522,8 +522,8 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-074",
     "sourceNumber": 4,
     "page": 82,
-    "question": "Which one should be worth more: A $500 million EBITDA healthcare company or a $500 million EBITDA industrials company? Assume the growth rates and margins are the same. In all likelihood, the healthcare company will be worth more because healthcare is a less asset- intensive industry. That means the company’s CapEx and Working Capital requirements will be lower, and its cash flow will be higher.",
-    "sampleAnswer": "Healthcare, at least in some sectors, also tends to be more of a “growth industry” than\nindustrials.\nThe Discount Rate might also be higher for the healthcare company, but the lower asset\nintensity and higher expected growth rates could offset that.\nThis answer is an extreme generalization, so you would need more information to give a\ndetailed answer."
+    "question": "Which one should be worth more: A $500 million EBITDA healthcare company or a $500 million EBITDA industrials company? Assume the growth rates and margins are the same.",
+    "sampleAnswer": "In all likelihood, the healthcare company will be worth more because healthcare is a less asset- intensive industry. That means the company’s CapEx and Working Capital requirements will be lower, and its cash flow will be higher.\nHealthcare, at least in some sectors, also tends to be more of a “growth industry” than\nindustrials.\nThe Discount Rate might also be higher for the healthcare company, but the lower asset\nintensity and higher expected growth rates could offset that.\nThis answer is an extreme generalization, so you would need more information to give a\ndetailed answer."
   },
   {
     "id": "mi-075",
@@ -571,15 +571,15 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-081",
     "sourceNumber": 11,
     "page": 85,
-    "question": "What is a Liquidation Valuation, and when is it useful and not so useful? In a Liquidation Valuation, you value a company by estimating the market values of all its Assets, adding them up, and subtracting its Liabilities (i.e., you assume full repayment of all Liabilities based on the proceeds from the sale of all its Assets).",
-    "sampleAnswer": "It gives you the company’s Implied Equity Value because you’re valuing its Net Assets, not its\nNet Operating Assets.\nThis methodology is useful for distressed companies because it tells you how much they might\nbe worth if they liquidate and how much different lender groups might receive.\nIt’s less useful for healthy, growing companies because it undervalues them significantly; assets\nlike Net PP&E are always worth more to “going concern” companies."
+    "question": "What is a Liquidation Valuation, and when is it useful and not so useful?",
+    "sampleAnswer": "In a Liquidation Valuation, you value a company by estimating the market values of all its Assets, adding them up, and subtracting its Liabilities (i.e., you assume full repayment of all Liabilities based on the proceeds from the sale of all its Assets).\nIt gives you the company’s Implied Equity Value because you’re valuing its Net Assets, not its\nNet Operating Assets.\nThis methodology is useful for distressed companies because it tells you how much they might\nbe worth if they liquidate and how much different lender groups might receive.\nIt’s less useful for healthy, growing companies because it undervalues them significantly; assets\nlike Net PP&E are always worth more to “going concern” companies."
   },
   {
     "id": "mi-082",
     "sourceNumber": 12,
     "page": 85,
-    "question": "How does a Dividend Discount Model (DDM) differ from a DCF? In a DDM, rather than projecting Free Cash Flow, you project the company’s Dividends, usually based on a per-share figure or a percentage of Net Income. You then discount the Dividends to their Present Value using the Cost of Equity and add them up. To calculate the Terminal Value, you use an Equity Value-based multiple such as P / E, and you discount it to Present Value using the Cost of Equity.",
-    "sampleAnswer": "You add the PV of the Terminal Value to the PV of the Dividends to calculate the company’s\nImplied Equity Value rather than its Implied Enterprise Value (there’s no “bridge”), and you\ndivide it by the diluted share count to get the company’s Implied Share Price.\nThe DDM is essential in some industries, such as commercial banks and insurance, useful in\nother industries that pay regular dividends, such as utilities, and not so useful for most others."
+    "question": "How does a Dividend Discount Model (DDM) differ from a DCF?",
+    "sampleAnswer": "In a DDM, rather than projecting Free Cash Flow, you project the company’s Dividends, usually based on a per-share figure or a percentage of Net Income. You then discount the Dividends to their Present Value using the Cost of Equity and add them up. To calculate the Terminal Value, you use an Equity Value-based multiple such as P / E, and you discount it to Present Value using the Cost of Equity.\nYou add the PV of the Terminal Value to the PV of the Dividends to calculate the company’s\nImplied Equity Value rather than its Implied Enterprise Value (there’s no “bridge”), and you\ndivide it by the diluted share count to get the company’s Implied Share Price.\nThe DDM is essential in some industries, such as commercial banks and insurance, useful in\nother industries that pay regular dividends, such as utilities, and not so useful for most others."
   },
   {
     "id": "mi-083",
@@ -704,8 +704,8 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-100",
     "sourceNumber": 1,
     "page": 94,
-    "question": "Why do you build a DCF analysis to value a company? In theory, a company is worth the Present Value of its expected future cash flows: Company Value = Cash Flow / (Discount Rate – Cash Flow Growth Rate), where Cash Flow Growth Rate < Discount Rate But you can’t just use this single formula because a company’s Cash Flow Growth Rate and Discount Rate change over time.",
-    "sampleAnswer": "So, in a Discounted Cash Flow analysis, you divide the valuation into two periods: One where\nthose assumptions may change (the explicit forecast period) and one where they stay the same\n(the Terminal Period).\nYou then project the company’s cash flows in both periods and discount them to their Present\nValues based on the appropriate Discount Rate(s).\nYou compare this sum – the company’s Implied Value – to its Current Value or “Asking Price” to\nsee if it’s valued appropriately."
+    "question": "Why do you build a DCF analysis to value a company?",
+    "sampleAnswer": "In theory, a company is worth the Present Value of its expected future cash flows: Company Value = Cash Flow / (Discount Rate – Cash Flow Growth Rate), where Cash Flow Growth Rate < Discount Rate But you can’t just use this single formula because a company’s Cash Flow Growth Rate and Discount Rate change over time.\nSo, in a Discounted Cash Flow analysis, you divide the valuation into two periods: One where\nthose assumptions may change (the explicit forecast period) and one where they stay the same\n(the Terminal Period).\nYou then project the company’s cash flows in both periods and discount them to their Present\nValues based on the appropriate Discount Rate(s).\nYou compare this sum – the company’s Implied Value – to its Current Value or “Asking Price” to\nsee if it’s valued appropriately."
   },
   {
     "id": "mi-101",
@@ -767,8 +767,8 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-109",
     "sourceNumber": 10,
     "page": 97,
-    "question": "Should you add back Stock-Based Compensation to calculate Free Cash Flow? It’s a non- cash add-back on the Cash Flow Statement.",
-    "sampleAnswer": "No! You should consider SBC a cash expense in the context of a valuation because it creates\nadditional shares and dilutes the existing investors. So, it’s not just a simple “timing difference”\nline item like CapEx and D&A.\nAs a real-life example, imagine owning a house, renting it out, and paying someone to manage\nthe tenants for you. Instead of paying them a salary, you give them a 1% stake in your house\neach year.\nIf you now sell your house after 10 years, you only get 90% of the proceeds rather than 100%.\nYou may not have paid this manager in cash, but you still paid them! SBC works the same way\nbut with a company's existing shareholders and their ownership."
+    "question": "Should you add back Stock-Based Compensation to calculate Free Cash Flow?",
+    "sampleAnswer": "It’s a non- cash add-back on the Cash Flow Statement.\nNo! You should consider SBC a cash expense in the context of a valuation because it creates\nadditional shares and dilutes the existing investors. So, it’s not just a simple “timing difference”\nline item like CapEx and D&A.\nAs a real-life example, imagine owning a house, renting it out, and paying someone to manage\nthe tenants for you. Instead of paying them a salary, you give them a 1% stake in your house\neach year.\nIf you now sell your house after 10 years, you only get 90% of the proceeds rather than 100%.\nYou may not have paid this manager in cash, but you still paid them! SBC works the same way\nbut with a company's existing shareholders and their ownership."
   },
   {
     "id": "mi-110",
@@ -1005,8 +1005,8 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-143",
     "sourceNumber": 9,
     "page": 111,
-    "question": "How do the assumptions for a cash-free, debt-free deal for a private Seller differ from those of a standard M&A deal for a public Seller? In a cash-free, debt-free deal, the Seller’s existing Cash and Debt balances go to $0 when the deal closes and are immediately replaced with new Cash and Debt balances.",
-    "sampleAnswer": "The Cash is brought up to the Seller’s Minimum Cash, and the new Debt balance is usually the\nsame as the old one because it is simply replaced with a new issuance.\nIf Debt > Cash, the Seller uses its Cash balance to repay as much Debt as it can, and the\nremaining Debt is deducted from the proceeds to the selling shareholders (i.e., they earn less\nbecause they must repay some of the Debt).\nIf Cash > Debt, the Seller repays its entire Debt balance using its Cash, and it distributes the\nremaining Cash to shareholders as the deal closes, which reduces its Equity Value.\nIn these types of deals, the purchase price is based on a multiple such as TEV / EBITDA or TEV /\nRevenue rather than a share-price premium because the Seller is private.\nAlso, the Uses side of the Sources & Uses schedule is based on the Purchase Enterprise Value,\nthe Seller’s Minimum Cash, and the Transaction/Financing Fees.\nThe Sources side is standard and includes the usual Cash, Debt, and Stock line items."
+    "question": "How do the assumptions for a cash-free, debt-free deal for a private Seller differ from those of a standard M&A deal for a public Seller?",
+    "sampleAnswer": "In a cash-free, debt-free deal, the Seller’s existing Cash and Debt balances go to $0 when the deal closes and are immediately replaced with new Cash and Debt balances.\nThe Cash is brought up to the Seller’s Minimum Cash, and the new Debt balance is usually the\nsame as the old one because it is simply replaced with a new issuance.\nIf Debt > Cash, the Seller uses its Cash balance to repay as much Debt as it can, and the\nremaining Debt is deducted from the proceeds to the selling shareholders (i.e., they earn less\nbecause they must repay some of the Debt).\nIf Cash > Debt, the Seller repays its entire Debt balance using its Cash, and it distributes the\nremaining Cash to shareholders as the deal closes, which reduces its Equity Value.\nIn these types of deals, the purchase price is based on a multiple such as TEV / EBITDA or TEV /\nRevenue rather than a share-price premium because the Seller is private.\nAlso, the Uses side of the Sources & Uses schedule is based on the Purchase Enterprise Value,\nthe Seller’s Minimum Cash, and the Transaction/Financing Fees.\nThe Sources side is standard and includes the usual Cash, Debt, and Stock line items."
   },
   {
     "id": "mi-144",
@@ -1061,8 +1061,8 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-151",
     "sourceNumber": 4,
     "page": 115,
-    "question": "Company A, with a current P / E multiple of 20x, acquires Company B for a P / E purchase multiple of 10x using 100% Debt. What interest rate on Debt would make the deal dilutive? Assume a 25% tax rate. Company B’s Yield is 1 / 10, or 10%, so the After-Tax Cost of Debt must be above 10% for the deal to be dilutive. At a 25% tax rate, 10% / (1 – 25%) = ~13.3%, which you can round to “Around 13%” (mental math: 75% of 10% is 7.5%, but we’re trying to find the number that 10% is 75% of  So it must be higher by at least 2.5%, which you can round up to ~13%).",
-    "sampleAnswer": "Most companies do not pay 13% interest rates on their Debt, so a 100% Debt will almost\ncertainly be accretive."
+    "question": "Company A, with a current P / E multiple of 20x, acquires Company B for a P / E purchase multiple of 10x using 100% Debt. What interest rate on Debt would make the deal dilutive? Assume a 25% tax rate.",
+    "sampleAnswer": "Company B’s Yield is 1 / 10, or 10%, so the After-Tax Cost of Debt must be above 10% for the deal to be dilutive. At a 25% tax rate, 10% / (1 – 25%) = ~13.3%, which you can round to “Around 13%” (mental math: 75% of 10% is 7.5%, but we’re trying to find the number that 10% is 75% of  So it must be higher by at least 2.5%, which you can round up to ~13%).\nMost companies do not pay 13% interest rates on their Debt, so a 100% Debt will almost\ncertainly be accretive."
   },
   {
     "id": "mi-152",
@@ -1124,8 +1124,8 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-160",
     "sourceNumber": 1,
     "page": 119,
-    "question": "What is a leveraged buyout, and why does it work? In a leveraged buyout (LBO), a private equity firm acquires a company using a combination of Debt and Equity, operates it for several years, and then sells the company at the end of the period to realize a return on its investment.",
-    "sampleAnswer": "During the ownership period, the PE firm uses the company’s cash flows to pay for the interest\nexpense on the Debt and to repay the Debt principal.\nLBOs work because leverage amplifies returns: If the deal performs well, the PE firm will realize\nhigher returns than if it had bought the company with 100% Equity.\nBut leverage also presents risks because the returns will be even worse if the deal does not\nperform well."
+    "question": "What is a leveraged buyout, and why does it work?",
+    "sampleAnswer": "In a leveraged buyout (LBO), a private equity firm acquires a company using a combination of Debt and Equity, operates it for several years, and then sells the company at the end of the period to realize a return on its investment.\nDuring the ownership period, the PE firm uses the company’s cash flows to pay for the interest\nexpense on the Debt and to repay the Debt principal.\nLBOs work because leverage amplifies returns: If the deal performs well, the PE firm will realize\nhigher returns than if it had bought the company with 100% Equity.\nBut leverage also presents risks because the returns will be even worse if the deal does not\nperform well."
   },
   {
     "id": "mi-161",
@@ -1159,8 +1159,8 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-165",
     "sourceNumber": 6,
     "page": 121,
-    "question": "Walk me through the Free Cash Flow calculation in an LBO model. How is it different from EBITDA, and why do we need both? In an LBO, Free Cash Flow = Net Income + D&A +/- Change in Working Capital – CapEx.",
-    "sampleAnswer": "You could also calculate it starting from EBITDA like this:\nFree Cash Flow = EBITDA – Net Interest Expense – Cash Taxes +/- Change in Working Capital –\nCapEx.\nFCF differs from EBITDA because EBITDA ignores Interest Income, Interest Expense, Taxes,\nWorking Capital, and Capital Expenditures – but all these items affect a company’s cash flow in\nreal life and, therefore, how much Debt it can repay.\nEBITDA is a quick proxy for cash flow from operations for the core business, ignoring capital\nstructure, but FCF is “the real thing” and factors in the capital structure because of the Net\nInterest Expense deduction."
+    "question": "Walk me through the Free Cash Flow calculation in an LBO model. How is it different from EBITDA, and why do we need both?",
+    "sampleAnswer": "In an LBO, Free Cash Flow = Net Income + D&A +/- Change in Working Capital – CapEx.\nYou could also calculate it starting from EBITDA like this:\nFree Cash Flow = EBITDA – Net Interest Expense – Cash Taxes +/- Change in Working Capital –\nCapEx.\nFCF differs from EBITDA because EBITDA ignores Interest Income, Interest Expense, Taxes,\nWorking Capital, and Capital Expenditures – but all these items affect a company’s cash flow in\nreal life and, therefore, how much Debt it can repay.\nEBITDA is a quick proxy for cash flow from operations for the core business, ignoring capital\nstructure, but FCF is “the real thing” and factors in the capital structure because of the Net\nInterest Expense deduction."
   },
   {
     "id": "mi-166",
@@ -1334,8 +1334,8 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-190",
     "sourceNumber": 6,
     "page": 133,
-    "question": "A company wants to reduce its cash interest expense on Debt by negotiating with lenders to get a lower coupon rate. However, the lenders want to maintain or increase their yield. What are the company’s options? Assuming this is relatively senior Debt, the main options are to offer the lenders something else that boosts their yield in exchange for a lower coupon rate. For example, the company could issue the new Debt with an Original Issue Discount (OID) that effectively gives lenders an upfront discount; they could also offer generous call premiums or",
-    "sampleAnswer": "Make-Whole Premiums that result in penalty fees in an early repayment.\nIf this is more of a stressed, distressed, or restructuring scenario, other options to boost the\nyield for lenders might include equity options, such as warrants attached to the Debt or\nsomething like a Debt-for-Equity swap."
+    "question": "A company wants to reduce its cash interest expense on Debt by negotiating with lenders to get a lower coupon rate. However, the lenders want to maintain or increase their yield. What are the company’s options?",
+    "sampleAnswer": "Assuming this is relatively senior Debt, the main options are to offer the lenders something else that boosts their yield in exchange for a lower coupon rate. For example, the company could issue the new Debt with an Original Issue Discount (OID) that effectively gives lenders an upfront discount; they could also offer generous call premiums or\nMake-Whole Premiums that result in penalty fees in an early repayment.\nIf this is more of a stressed, distressed, or restructuring scenario, other options to boost the\nyield for lenders might include equity options, such as warrants attached to the Debt or\nsomething like a Debt-for-Equity swap."
   },
   {
     "id": "mi-191",
@@ -1425,8 +1425,8 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-203",
     "sourceNumber": 4,
     "page": 139,
-    "question": "OK, so what factors might cause a company to become “stressed” and then “distressed?” A company could become stressed due to either macro or micro factors. Macro factors might include an industry downturn or a shock such as a war, energy crisis, or pandemic.",
-    "sampleAnswer": "Micro factors could include poor management decisions, such as expanding into the wrong\nmarkets, taking on too much Debt, or making too many value-destructive acquisitions.\nTo go from stressed to distressed, a specific catalyst is required. This is usually something like a\nmissed interest or principal repayment on Debt, a violated covenant, a credit rating downgrade,\nor the Cash balance falling below a minimum level."
+    "question": "OK, so what factors might cause a company to become “stressed” and then “distressed?”",
+    "sampleAnswer": "A company could become stressed due to either macro or micro factors. Macro factors might include an industry downturn or a shock such as a war, energy crisis, or pandemic.\nMicro factors could include poor management decisions, such as expanding into the wrong\nmarkets, taking on too much Debt, or making too many value-destructive acquisitions.\nTo go from stressed to distressed, a specific catalyst is required. This is usually something like a\nmissed interest or principal repayment on Debt, a violated covenant, a credit rating downgrade,\nor the Cash balance falling below a minimum level."
   },
   {
     "id": "mi-204",
@@ -1600,8 +1600,8 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-228",
     "sourceNumber": 4,
     "page": 151,
-    "question": "For normal companies, there is often a relationship between the growth rates of metrics such as Revenue and EBITDA and the corresponding valuation multiples, such as TEV / Revenue and TEV / EBITDA. What types of relationships exist for banks and insurance firms? In these verticals, there tends to be a strong correlation between Return on Equity (ROE) and P / BV multiples (and variations, such as ROTCE and P / TBV multiples).",
-    "sampleAnswer": "You can even link the multiples and metrics formulaically for “stabilized” banks:\n• P / BV = (ROE – Net Income Growth Rate) / (Cost of Equity – Net Income Growth Rate)\n• P / TBV = (ROTCE – Net Income to Common Growth Rate) / (Cost of Equity – Net Income\nto Common Growth Rate)\nThere may also be some correlation between P / E multiples and Net Income Growth, but it\ntends to be weaker than the others.\nYou can spot a possibly mispriced bank or insurance firm if its ROE-based metrics are similar to\npeer companies’, but its P / BV or P / TBV multiples differ significantly."
+    "question": "For normal companies, there is often a relationship between the growth rates of metrics such as Revenue and EBITDA and the corresponding valuation multiples, such as TEV / Revenue and TEV / EBITDA. What types of relationships exist for banks and insurance firms?",
+    "sampleAnswer": "In these verticals, there tends to be a strong correlation between Return on Equity (ROE) and P / BV multiples (and variations, such as ROTCE and P / TBV multiples).\nYou can even link the multiples and metrics formulaically for “stabilized” banks:\n• P / BV = (ROE – Net Income Growth Rate) / (Cost of Equity – Net Income Growth Rate)\n• P / TBV = (ROTCE – Net Income to Common Growth Rate) / (Cost of Equity – Net Income\nto Common Growth Rate)\nThere may also be some correlation between P / E multiples and Net Income Growth, but it\ntends to be weaker than the others.\nYou can spot a possibly mispriced bank or insurance firm if its ROE-based metrics are similar to\npeer companies’, but its P / BV or P / TBV multiples differ significantly."
   },
   {
     "id": "mi-229",
@@ -1754,8 +1754,8 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-250",
     "sourceNumber": 1,
     "page": 164,
-    "question": "Can you explain how industrials is different from other groups and what the main verticals are? Industrials companies make machinery or large physical products, transport them, or service them; the customers are usually corporations or governments rather than consumers, and the sector is highly sensitive to the economy and macro conditions, such as credit availability, interest rates, and trade policies.",
-    "sampleAnswer": "Many sources divide the industry into capital goods (aerospace/defense, building products,\nmachinery, etc.), transportation (air freight, airlines, maritime, railroads, etc.), and\ncommercial/professional services.\nAccounting and valuation are standard in most verticals, but the key drivers and KPIs differ."
+    "question": "Can you explain how industrials is different from other groups and what the main verticals are?",
+    "sampleAnswer": "Industrials companies make machinery or large physical products, transport them, or service them; the customers are usually corporations or governments rather than consumers, and the sector is highly sensitive to the economy and macro conditions, such as credit availability, interest rates, and trade policies.\nMany sources divide the industry into capital goods (aerospace/defense, building products,\nmachinery, etc.), transportation (air freight, airlines, maritime, railroads, etc.), and\ncommercial/professional services.\nAccounting and valuation are standard in most verticals, but the key drivers and KPIs differ."
   },
   {
     "id": "mi-251",
@@ -1908,8 +1908,8 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-272",
     "sourceNumber": 8,
     "page": 175,
-    "question": "How would you value a midstream company, such as an oil & gas pipeline operator? Forecasts are based on the company’s gathering capacity, utilization rate, and average gathering fee, with OpEx based on both capacity and volumes processed; CapEx is linked to maintenance needs for existing pipelines and any expansion efforts.",
-    "sampleAnswer": "You can still use a traditional DCF model and multiples such as TEV / EBITDA, but you could also\nuse a Dividend Discount Model since MLPs distribute high percentages of their Distributable\nCash Flow.\nAlso, you could look at slightly different metrics and multiples, such as Distribution Yields, Cash\nAvailable for Distribution (CAFD), and P / CAFD; these are important because different amounts\nmight be distributed to the different investor groups (see below)."
+    "question": "How would you value a midstream company, such as an oil & gas pipeline operator?",
+    "sampleAnswer": "Forecasts are based on the company’s gathering capacity, utilization rate, and average gathering fee, with OpEx based on both capacity and volumes processed; CapEx is linked to maintenance needs for existing pipelines and any expansion efforts.\nYou can still use a traditional DCF model and multiples such as TEV / EBITDA, but you could also\nuse a Dividend Discount Model since MLPs distribute high percentages of their Distributable\nCash Flow.\nAlso, you could look at slightly different metrics and multiples, such as Distribution Yields, Cash\nAvailable for Distribution (CAFD), and P / CAFD; these are important because different amounts\nmight be distributed to the different investor groups (see below)."
   },
   {
     "id": "mi-273",
@@ -1929,8 +1929,8 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-275",
     "sourceNumber": 1,
     "page": 176,
-    "question": "Can you explain the main verticals within power & utilities and how valuation differs? One common split is regulated utilities for electricity, gas, and water, independent power producers (unregulated), and multi-utilities that do a bit of everything.",
-    "sampleAnswer": "Unregulated independent power producers are standard companies that buy fuel/raw\nmaterials, turn it into electricity, and sell it; some of the metrics differ, but the valuation\nmultiples and approach (e.g., a basic DCF) are the same.\nRegulated utility companies are quite different because they operate based on a Rate Base (Net\nPP&E with some adjustments), have an allowed Debt / Total Capital Ratio, and an allowed ROE,\nso they must “back into” the utility rates they are allowed to charge based on that.\nYou can still use a DCF to value them, but alternative multiples, such as TEV / Rate Base and TEV\n/ Power Capacity (in $ per MW), are common; multiples such as P / BV and P / TBV are also\nimportant due to the Equity contribution to the Rate Base."
+    "question": "Can you explain the main verticals within power & utilities and how valuation differs?",
+    "sampleAnswer": "One common split is regulated utilities for electricity, gas, and water, independent power producers (unregulated), and multi-utilities that do a bit of everything.\nUnregulated independent power producers are standard companies that buy fuel/raw\nmaterials, turn it into electricity, and sell it; some of the metrics differ, but the valuation\nmultiples and approach (e.g., a basic DCF) are the same.\nRegulated utility companies are quite different because they operate based on a Rate Base (Net\nPP&E with some adjustments), have an allowed Debt / Total Capital Ratio, and an allowed ROE,\nso they must “back into” the utility rates they are allowed to charge based on that.\nYou can still use a DCF to value them, but alternative multiples, such as TEV / Rate Base and TEV\n/ Power Capacity (in $ per MW), are common; multiples such as P / BV and P / TBV are also\nimportant due to the Equity contribution to the Rate Base."
   },
   {
     "id": "mi-276",
@@ -2013,8 +2013,8 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-287",
     "sourceNumber": 3,
     "page": 182,
-    "question": "At a high level, how is private company valuation different? Assuming you are valuing a “small business,” you start the valuation after making the financial statement adjustments described in the previous question. In the valuation itself, you often discount the output of certain methodologies because private companies have illiquid shares, tend to be smaller than public companies, and are often dependent on key individuals.",
-    "sampleAnswer": "This translates into literal discounts on the multiples from the Public Comps (e.g., 20 – 40%\nreductions), a higher Discount Rate in the DCF, and a “haircut” Terminal Value to reflect the risk\nof the company shutting down or declining.\nTrue small businesses are worth significantly less than public companies with Boards and\nprofessional managers, so the EBITDA and cash flow multiples should be much lower.\nYou would not make these adjustments to the same degree for VC-backed startups or\nlarge/mature private companies."
+    "question": "At a high level, how is private company valuation different?",
+    "sampleAnswer": "Assuming you are valuing a “small business,” you start the valuation after making the financial statement adjustments described in the previous question. In the valuation itself, you often discount the output of certain methodologies because private companies have illiquid shares, tend to be smaller than public companies, and are often dependent on key individuals.\nThis translates into literal discounts on the multiples from the Public Comps (e.g., 20 – 40%\nreductions), a higher Discount Rate in the DCF, and a “haircut” Terminal Value to reflect the risk\nof the company shutting down or declining.\nTrue small businesses are worth significantly less than public companies with Boards and\nprofessional managers, so the EBITDA and cash flow multiples should be much lower.\nYou would not make these adjustments to the same degree for VC-backed startups or\nlarge/mature private companies."
   },
   {
     "id": "mi-288",
@@ -2300,8 +2300,8 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-328",
     "sourceNumber": 4,
     "page": 204,
-    "question": "Suppose you are valuing a semiconductor company, such as TSMC, and a broader “hardware company,” such as Samsung. What types of accounting and valuation differences would you expect? Assuming the semiconductor company does its own manufacturing, which TSMC does, both firms will focus heavily on gross margins and CapEx, with valuation often linked to the most efficient firms on these metrics.",
-    "sampleAnswer": "Semiconductor companies also tend to have high R&D costs, so they are often “halfway\nbetween” hardware and software. They are also more cyclical and tend to be affected more by\nmacro factors and market trends (crypto boom, AI boom, etc.).\nAlso, since semiconductor companies are mostly enterprise-facing, they focus heavily on\nmetrics such as the book-to-bill ratio (orders received / orders shipped) and their capacity\nutilization to assess market demand.\nYou would still use the standard multiples and methodologies for both types of firms (DCF, TEV\n/ EBITDA, P / E, etc.)."
+    "question": "Suppose you are valuing a semiconductor company, such as TSMC, and a broader “hardware company,” such as Samsung. What types of accounting and valuation differences would you expect?",
+    "sampleAnswer": "Assuming the semiconductor company does its own manufacturing, which TSMC does, both firms will focus heavily on gross margins and CapEx, with valuation often linked to the most efficient firms on these metrics.\nSemiconductor companies also tend to have high R&D costs, so they are often “halfway\nbetween” hardware and software. They are also more cyclical and tend to be affected more by\nmacro factors and market trends (crypto boom, AI boom, etc.).\nAlso, since semiconductor companies are mostly enterprise-facing, they focus heavily on\nmetrics such as the book-to-bill ratio (orders received / orders shipped) and their capacity\nutilization to assess market demand.\nYou would still use the standard multiples and methodologies for both types of firms (DCF, TEV\n/ EBITDA, P / E, etc.)."
   },
   {
     "id": "mi-329",
