@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { readFile } from "node:fs/promises";
 
 export const size = {
   width: 1200,
@@ -7,7 +8,12 @@ export const size = {
 
 export const contentType = "image/png";
 
-export default function Image() {
+const libreRegular = readFile("./public/fonts/libre-baskerville-regular.ttf");
+const libreBold = readFile("./public/fonts/libre-baskerville-bold.ttf");
+
+export default async function Image() {
+  const [regular, bold] = await Promise.all([libreRegular, libreBold]);
+
   return new ImageResponse(
     (
       <div
@@ -43,7 +49,7 @@ export default function Image() {
           >
             <div
               style={{
-                fontFamily: "Georgia, Times New Roman, serif",
+                fontFamily: "LibreBaskerville",
                 fontSize: 34,
                 fontWeight: 700,
               }}
@@ -54,7 +60,7 @@ export default function Image() {
           <div
             style={{
               display: "flex",
-              fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+              fontFamily: "LibreBaskerville",
               fontSize: 25,
               fontWeight: 500,
               gap: 34,
@@ -92,7 +98,7 @@ export default function Image() {
                 style={{
                   borderBottom: "2px solid #000",
                   display: "flex",
-                  fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                  fontFamily: "LibreBaskerville",
                   fontSize: 22,
                   fontWeight: 600,
                   letterSpacing: 0,
@@ -112,23 +118,23 @@ export default function Image() {
               >
                 <div
                   style={{
-                    fontFamily: "Georgia, Times New Roman, serif",
-                    fontSize: 104,
+                    fontFamily: "LibreBaskerville",
+                    fontSize: 82,
                     fontWeight: 400,
                     letterSpacing: 0,
                     lineHeight: 0.9,
-                    maxWidth: 920,
+                    maxWidth: 1060,
                   }}
                 >
                   Market Technicals
                 </div>
                 <div
                   style={{
-                    fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                    fontSize: 32,
+                    fontFamily: "LibreBaskerville",
+                    fontSize: 28,
                     fontWeight: 400,
-                    lineHeight: 1.28,
-                    maxWidth: 890,
+                    lineHeight: 1.34,
+                    maxWidth: 980,
                   }}
                 >
                   Finance technical interview practice across accounting,
@@ -140,7 +146,7 @@ export default function Image() {
               style={{
                 alignItems: "stretch",
                 display: "flex",
-                gap: 14,
+                gap: 16,
                 marginTop: -18,
               }}
             >
@@ -150,16 +156,17 @@ export default function Image() {
                   background: "#fff",
                   border: "1.5px solid #000",
                   display: "flex",
-                  height: 72,
+                  height: 78,
                   justifyContent: "center",
-                  padding: "0 26px",
+                  padding: "0 30px",
                 }}
               >
                 <span
                   style={{
-                    fontFamily: "Georgia, Times New Roman, serif",
-                    fontSize: 24,
+                    fontFamily: "LibreBaskerville",
+                    fontSize: 20,
                     fontWeight: 700,
+                    whiteSpace: "nowrap",
                   }}
                 >
                   400 M&amp;I Q&amp;A pairs
@@ -174,12 +181,13 @@ export default function Image() {
                       background: "#fff",
                       border: "1.5px solid #000",
                       display: "flex",
-                      fontFamily: "Georgia, Times New Roman, serif",
-                      fontSize: 24,
+                      fontFamily: "LibreBaskerville",
+                      fontSize: 20,
                       fontWeight: 700,
-                      height: 72,
+                      height: 78,
                       justifyContent: "center",
-                      padding: "0 26px",
+                      padding: "0 28px",
+                      whiteSpace: "nowrap",
                     }}
                   >
                     {label}
@@ -191,6 +199,22 @@ export default function Image() {
         </div>
       </div>
     ),
-    size,
+    {
+      ...size,
+      fonts: [
+        {
+          name: "LibreBaskerville",
+          data: regular,
+          style: "normal",
+          weight: 400,
+        },
+        {
+          name: "LibreBaskerville",
+          data: bold,
+          style: "normal",
+          weight: 700,
+        },
+      ],
+    },
   );
 }
