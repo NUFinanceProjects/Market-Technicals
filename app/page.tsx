@@ -15,7 +15,7 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { behavioralQuestions } from "@/lib/behavioral-questions";
-import { mi400Questions } from "@/lib/mi-400-questions";
+import { mi400Questions, type MIQuestion } from "@/lib/mi-400-questions";
 import { questions } from "@/lib/questions";
 import {
   categories,
@@ -207,6 +207,7 @@ export default function Home({
   const [miAnswer, setMiAnswer] = useState("");
   const [showMiSample, setShowMiSample] = useState(false);
   const [miGrade, setMiGrade] = useState<GradeResponse | null>(null);
+  const [miGeneratedQuestion, setMiGeneratedQuestion] = useState<MIQuestion | null>(null);
   const [isMiGrading, setIsMiGrading] = useState(false);
   const [miShuffle, setMiShuffle] = useState(false);
   const [miSkipped, setMiSkipped] = useState(0);
@@ -326,7 +327,7 @@ export default function Home({
   }, [pathname]);
 
   const currentQuestion = sessionQuestions[currentIndex];
-  const currentMiQuestion = mi400Questions[miIndex];
+  const currentMiQuestion = miGeneratedQuestion ?? mi400Questions[miIndex];
   const currentBehavioralQuestion = behavioralQuestions[behavioralIndex];
   const progress =
     sessionQuestions.length > 0
@@ -503,6 +504,59 @@ export default function Home({
     }
   };
 
+  const generateSimilarPracticeQuestion = async () => {
+    if (!currentQuestion) return;
+
+    setIsGenerating(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/generate-question", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...config,
+          category: currentQuestion.category,
+          practiceMode: currentQuestion.mode,
+          sourceQuestion: currentQuestion.question,
+          sourceAnswer: currentQuestion.referenceAnswer,
+          reinforceConcept: true,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error ?? "Unable to generate a similar question.");
+      }
+
+      const generatedQuestion = data.question as InterviewQuestion;
+
+      setSessionQuestions((previous) => {
+        const nextQuestions = previous.map((question, index) =>
+          index === currentIndex ? generatedQuestion : question,
+        );
+        savePracticeSession({
+          config,
+          questions: nextQuestions,
+          currentIndex,
+          answers,
+        });
+        return nextQuestions;
+      });
+      setAnswer("");
+      setCurrentGrade(null);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to generate a similar question.",
+      );
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const reset = () => {
     goTo("home");
     setAnswer("");
@@ -518,6 +572,7 @@ export default function Home({
     setMiAnswer("");
     setShowMiSample(false);
     setMiGrade(null);
+    setMiGeneratedQuestion(null);
     setError("");
     setScreen("miQuiz");
     router.push(`/MI400/practice?question=${questionNumber}${shuffleQuery}`);
@@ -579,6 +634,55 @@ export default function Home({
       );
     } finally {
       setIsMiGrading(false);
+    }
+  };
+
+  const generateSimilarMiQuestion = async () => {
+    if (!currentMiQuestion) return;
+
+    setIsGenerating(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/generate-question", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          category: "M&A",
+          difficulty: "Intermediate",
+          practiceMode: "Technical Questions",
+          sourceQuestion: currentMiQuestion.question,
+          sourceAnswer: currentMiQuestion.sampleAnswer,
+          reinforceConcept: true,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error ?? "Unable to generate a similar question.");
+      }
+
+      const generatedQuestion = data.question as InterviewQuestion;
+
+      setMiGeneratedQuestion({
+        id: `mi-generated-${Date.now()}`,
+        sourceNumber: currentMiQuestion.sourceNumber,
+        page: currentMiQuestion.page,
+        question: generatedQuestion.question,
+        sampleAnswer: generatedQuestion.referenceAnswer,
+      });
+      setMiAnswer("");
+      setShowMiSample(false);
+      setMiGrade(null);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to generate a similar question.",
+      );
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -901,7 +1005,7 @@ export default function Home({
                   <>
                     <button
                       onClick={submitMiAnswer}
-                      disabled={isMiGrading}
+                      disabled={isMiGrading || isGenerating}
                       className="inline-flex h-12 items-center justify-center gap-2 bg-mint px-5 font-black text-ink transition hover:bg-[#89a9cf]"
                     >
                       {isMiGrading ? (
@@ -918,7 +1022,7 @@ export default function Home({
                     </button>
                     <button
                       onClick={skipMiQuestion}
-                      disabled={isMiGrading}
+                      disabled={isMiGrading || isGenerating}
                       className="inline-flex h-12 items-center justify-center border border-line bg-white px-5 font-black text-ink transition hover:border-mint disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       Not Applicable
@@ -928,14 +1032,33 @@ export default function Home({
                   <>
                     <button
                       onClick={nextMiQuestion}
-                      className="inline-flex h-12 items-center justify-center gap-2 bg-mint px-5 font-black text-ink transition hover:bg-[#89a9cf]"
+                      disabled={isGenerating}
+                      className="inline-flex h-12 items-center justify-center gap-2 bg-mint px-5 font-black text-ink transition hover:bg-[#89a9cf] disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       Next M&I Question
                       <ArrowRight size={18} />
                     </button>
                     <button
+                      onClick={generateSimilarMiQuestion}
+                      disabled={isGenerating}
+                      className="inline-flex h-12 items-center justify-center gap-2 border border-line bg-white px-5 font-black text-ink transition hover:border-mint disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isGenerating ? (
+                        <>
+                          <Loader2 className="animate-spin" size={18} />
+                          Generating
+                        </>
+                      ) : (
+                        <>
+                          Another Like This
+                          <RefreshCcw size={18} />
+                        </>
+                      )}
+                    </button>
+                    <button
                       onClick={() => goTo("mi")}
-                      className="inline-flex h-12 items-center justify-center border border-line bg-white px-5 font-black text-ink transition hover:border-mint"
+                      disabled={isGenerating}
+                      className="inline-flex h-12 items-center justify-center border border-line bg-white px-5 font-black text-ink transition hover:border-mint disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       Back to M&I Bank
                     </button>
@@ -948,12 +1071,14 @@ export default function Home({
                   {miGrade && <BankFeedback grade={miGrade} />}
                   <div className="mt-6 border border-line bg-white p-4">
                     <h3 className="text-lg font-black text-black">
-                      Sample answer (M&I 400, p. {currentMiQuestion.page})
+                      {miGeneratedQuestion
+                        ? "Generated sample answer"
+                        : `Sample answer (M&I 400, p. ${currentMiQuestion.page})`}
                     </h3>
                     <p className="mt-2 text-xs leading-5 text-steel">
-                      Source: Mergers & Inquisitions / Breaking Into Wall Street 400 Questions
-                      Investment Banking Interview Guide. Market Technicals is an independent
-                      study aid and is not affiliated with or endorsed by M&I or BIWS.
+                      {miGeneratedQuestion
+                        ? "Generated by Market Technicals to reinforce the same concept with a fresh prompt. It is not from M&I or BIWS."
+                        : "Source: Mergers & Inquisitions / Breaking Into Wall Street 400 Questions Investment Banking Interview Guide. Market Technicals is an independent study aid and is not affiliated with or endorsed by M&I or BIWS."}
                     </p>
                     <p className="mt-3 whitespace-pre-line text-sm leading-6 text-ink">
                       {currentMiQuestion.sampleAnswer}
@@ -968,8 +1093,10 @@ export default function Home({
                 M&I source
               </h3>
               <div className="mt-4 text-5xl font-black text-black">
-                {miIndex + 1}
-                <span className="text-lg text-steel"> / {mi400Questions.length}</span>
+                {miGeneratedQuestion ? "AI" : miIndex + 1}
+                {!miGeneratedQuestion && (
+                  <span className="text-lg text-steel"> / {mi400Questions.length}</span>
+                )}
               </div>
               <p className="mt-4 text-sm leading-6 text-steel">
                 The displayed sample answer is taken directly from the attached M&I text, with
@@ -1423,15 +1550,35 @@ export default function Home({
                     </button>
                   </>
                 ) : (
-                  <button
-                    onClick={nextQuestion}
-                    className="inline-flex h-12 items-center justify-center gap-2 bg-mint px-5 font-black text-ink transition hover:bg-[#89a9cf]"
-                  >
-                    {currentIndex + 1 >= sessionQuestions.length
-                      ? "View Results"
-                      : "Next Question"}
-                    <ArrowRight size={18} />
-                  </button>
+                  <>
+                    <button
+                      onClick={nextQuestion}
+                      disabled={isGenerating}
+                      className="inline-flex h-12 items-center justify-center gap-2 bg-mint px-5 font-black text-ink transition hover:bg-[#89a9cf] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {currentIndex + 1 >= sessionQuestions.length
+                        ? "View Results"
+                        : "Next Question"}
+                      <ArrowRight size={18} />
+                    </button>
+                    <button
+                      onClick={generateSimilarPracticeQuestion}
+                      disabled={isGenerating}
+                      className="inline-flex h-12 items-center justify-center gap-2 border border-line bg-white px-5 font-black text-ink transition hover:border-mint disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isGenerating ? (
+                        <>
+                          <Loader2 className="animate-spin" size={18} />
+                          Generating
+                        </>
+                      ) : (
+                        <>
+                          Another Like This
+                          <RefreshCcw size={18} />
+                        </>
+                      )}
+                    </button>
+                  </>
                 )}
               </div>
 

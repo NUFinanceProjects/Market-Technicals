@@ -46,8 +46,8 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-006",
     "sourceNumber": 6,
     "page": 47,
-    "question": "A company generates $100 of cash flow today, and its cash flow is expected to grow at 5% per year for the long term.",
-    "sampleAnswer": "You could earn 10% per year by investing in other, similar companies. How much would you\npay for this company?\nCompany Value = Cash Flow / (Discount Rate – Cash Flow Growth Rate), where Cash Flow\nGrowth Rate < Discount Rate.\nSo, this one becomes: $100 / (10% – 5%) = $2,000.\nA higher Discount Rate makes a company less valuable, and a higher cash flow growth rate\nmakes a company more valuable."
+    "question": "A company generates $100 of cash flow today, and its cash flow is expected to grow at 5% per year for the long term. You could earn 10% per year by investing in other, similar companies. How much would you pay for this company?",
+    "sampleAnswer": "Company Value = Cash Flow / (Discount Rate – Cash Flow Growth Rate), where Cash Flow\nGrowth Rate < Discount Rate.\nSo, this one becomes: $100 / (10% – 5%) = $2,000.\nA higher Discount Rate makes a company less valuable, and a higher cash flow growth rate\nmakes a company more valuable."
   },
   {
     "id": "mi-007",
@@ -340,7 +340,7 @@ export const mi400Questions: MIQuestion[] = [
     "id": "mi-048",
     "sourceNumber": 2,
     "page": 71,
-    "question": "That sounds complicated. What do these concepts mean in plain English? Can you give a real-life analogy?",
+    "question": "What do Equity Value and Enterprise Value mean in plain English? Can you explain them with a real-life analogy?",
     "sampleAnswer": "If you buy a house for $500K with a $100K down payment, $500K is the Enterprise Value, and\n$100K is the Equity Value.\nEnterprise Value does not change when the capital structure changes, so if you use $250K for\nthe down payment, the Equity Value is now $250K, but the Enterprise Value is still $500K."
   },
   {

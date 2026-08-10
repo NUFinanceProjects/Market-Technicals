@@ -9,6 +9,9 @@ const requestSchema = z.object({
   category: z.union([z.enum(categories), z.literal("All Categories")]),
   difficulty: z.enum(difficulties),
   practiceMode: z.enum(practiceModes),
+  sourceQuestion: z.string().min(10).optional(),
+  sourceAnswer: z.string().min(20).optional(),
+  reinforceConcept: z.boolean().optional(),
 });
 
 const generatedQuestionSchema = z.object({
@@ -91,10 +94,16 @@ function generatedPrompt({
   category,
   difficulty,
   practiceMode,
+  sourceQuestion,
+  sourceAnswer,
+  reinforceConcept,
 }: {
   category: Category | "All Categories";
   difficulty: Difficulty;
   practiceMode: PracticeMode;
+  sourceQuestion?: string;
+  sourceAnswer?: string;
+  reinforceConcept?: boolean;
 }) {
   const modeInstruction =
     practiceMode === "Mixed Practice"
@@ -107,7 +116,7 @@ function generatedPrompt({
       ? `Choose one category from: ${categories.join(", ")}.`
       : `The category must be ${category}.`;
 
-  return {
+  const basePrompt = {
     instruction:
       "Generate one original investment banking / private equity interview practice question. It should be realistic, useful for spoken interview practice, and not copied from any prep guide. Return only the requested JSON object.",
     categoryInstruction,
@@ -117,6 +126,18 @@ function generatedPrompt({
       "Make it specific enough to grade well. Avoid trivia, obscure edge cases, and treatments where market convention varies. Prefer standard interview concepts with broadly accepted answers across financial statements, valuation, DCF, M&A, LBO, capital markets, or market knowledge. Self-check that the reference answer is internally consistent and finance-accurate before returning it.",
     marketScenarioRule:
       "If mode is Market Scenarios, marketScenario must be a short realistic business or market setup, and the question must explicitly ask how to interpret, analyze, value, finance, diligence, or respond to that setup. If mode is Technical Questions, marketScenario must be null.",
+  };
+
+  if (!reinforceConcept || !sourceQuestion) {
+    return basePrompt;
+  }
+
+  return {
+    ...basePrompt,
+    reinforcementInstruction:
+      "Generate a fresh 'another like this' question that reinforces the same underlying finance concept and answer structure as the source question, but changes the company names, numbers, market setup, transaction details, or facts. Do not copy the source wording. If the source uses numbers, use different numbers that still produce a clean, internally consistent answer.",
+    sourceQuestion,
+    sourceAnswer,
   };
 }
 
