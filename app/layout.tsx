@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: "Market Technicals",
   description:
     "Finance technical interview preparation that connects accounting, valuation, M&A, LBOs, capital markets, and market events into realistic spoken-answer practice.",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     title: "Market Technicals",
     description:
