@@ -36,6 +36,7 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
   icons: {
     icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
       { url: "/apple-icon.png", sizes: "128x128", type: "image/png" },
       { url: "/favicon.png", sizes: "512x512", type: "image/png" },
       { url: "/favicon.ico", sizes: "any" },

@@ -45,6 +45,10 @@ type SessionConfig = {
   practiceMode: PracticeMode;
   questionCount: number;
 };
+type HomeProps = {
+  initialScreen?: Screen;
+  initialPracticeMode?: PracticeMode;
+};
 
 const defaultConfig: SessionConfig = {
   category: "All Categories",
@@ -169,11 +173,17 @@ function bestAndWeakest(answers: SessionAnswer[]) {
   };
 }
 
-export default function Home() {
+export default function Home({
+  initialScreen = "home",
+  initialPracticeMode = "Mixed Practice",
+}: HomeProps = {}) {
   const router = useRouter();
   const pathname = usePathname();
   const navRef = useRef<HTMLElement>(null);
-  const [config, setConfig] = useState<SessionConfig>(defaultConfig);
+  const [config, setConfig] = useState<SessionConfig>(() => ({
+    ...defaultConfig,
+    practiceMode: initialPracticeMode,
+  }));
   const [sessionQuestions, setSessionQuestions] = useState<InterviewQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answer, setAnswer] = useState("");
@@ -196,7 +206,7 @@ export default function Home() {
   const [isGrading, setIsGrading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState("");
-  const [screen, setScreen] = useState<Screen>("home");
+  const [screen, setScreen] = useState<Screen>(initialScreen);
 
   const goTo = (nextScreen: Screen, nextMode?: PracticeMode) => {
     const practiceRoute = modeRoutes[nextMode ?? config.practiceMode];
