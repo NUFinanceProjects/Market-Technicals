@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "lucide-react": "latest",
     "next": "latest",
     "openai": "latest",
