@@ -49,6 +49,12 @@ type HomeProps = {
   initialScreen?: Screen;
   initialPracticeMode?: PracticeMode;
 };
+type StoredPracticeSession = {
+  config: SessionConfig;
+  questions: InterviewQuestion[];
+  currentIndex: number;
+  answers: SessionAnswer[];
+};
 
 const defaultConfig: SessionConfig = {
   category: "All Categories",
@@ -56,6 +62,7 @@ const defaultConfig: SessionConfig = {
   practiceMode: "Mixed Practice",
   questionCount: 5,
 };
+const practiceSessionStorageKey = "market-technicals:practice-session";
 
 const screenRoutes: Record<Screen, string> = {
   home: "/",
@@ -113,6 +120,13 @@ const shuffle = <T,>(items: T[]) =>
     .map((item) => ({ item, sort: Math.random() }))
     .sort((a, b) => a.sort - b.sort)
     .map(({ item }) => item);
+
+const randomIndexExcept = (length: number, currentIndex: number) => {
+  if (length <= 1) return 0;
+
+  const nextIndex = Math.floor(Math.random() * (length - 1));
+  return nextIndex >= currentIndex ? nextIndex + 1 : nextIndex;
+};
 
 function buildSession(config: SessionConfig) {
   const filtered = eligibleQuestions(config, true);
@@ -257,12 +271,52 @@ export default function Home({
       nextScreen = "home";
     }
 
+    const params = new URLSearchParams(window.location.search);
+    const questionParam = Number(params.get("question"));
+    const shuffleParam = params.get("shuffle") === "1";
+
     navRef.current?.scrollTo({ left: 0 });
 
     if (nextScreen || routeMode) {
       queueMicrotask(() => {
         if (routeMode) {
           setConfig((current) => ({ ...current, practiceMode: routeMode }));
+        }
+        if (nextScreen === "quiz" || nextScreen === "results") {
+          const storedSession = sessionStorage.getItem(practiceSessionStorageKey);
+
+          if (storedSession) {
+            try {
+              const parsedSession = JSON.parse(storedSession) as StoredPracticeSession;
+
+              setConfig(parsedSession.config);
+              setSessionQuestions(parsedSession.questions);
+              setCurrentIndex(parsedSession.currentIndex);
+              setAnswers(parsedSession.answers);
+              setAnswer("");
+              setCurrentGrade(null);
+            } catch {
+              sessionStorage.removeItem(practiceSessionStorageKey);
+            }
+          }
+        }
+        if (
+          nextScreen === "miQuiz" &&
+          Number.isInteger(questionParam) &&
+          questionParam >= 1 &&
+          questionParam <= mi400Questions.length
+        ) {
+          setMiIndex(questionParam - 1);
+          setMiShuffle(shuffleParam);
+        }
+        if (
+          nextScreen === "behavioralQuiz" &&
+          Number.isInteger(questionParam) &&
+          questionParam >= 1 &&
+          questionParam <= behavioralQuestions.length
+        ) {
+          setBehavioralIndex(questionParam - 1);
+          setBehavioralShuffle(shuffleParam);
         }
         if (nextScreen) {
           setScreen(nextScreen);
@@ -286,8 +340,18 @@ export default function Home({
     );
   }, [answers]);
 
+  const savePracticeSession = (session: StoredPracticeSession) => {
+    sessionStorage.setItem(practiceSessionStorageKey, JSON.stringify(session));
+  };
+
   const startSession = () => {
     const nextQuestions = buildSession(config);
+    savePracticeSession({
+      config,
+      questions: nextQuestions,
+      currentIndex: 0,
+      answers: [],
+    });
     setSessionQuestions(nextQuestions);
     setCurrentIndex(0);
     setAnswer("");
@@ -320,10 +384,19 @@ export default function Home({
       }
 
       setCurrentGrade(data);
-      setAnswers((previous) => [
-        ...previous,
-        { question: currentQuestion, answer, grade: data },
-      ]);
+      setAnswers((previous) => {
+        const nextAnswers = [
+          ...previous,
+          { question: currentQuestion, answer, grade: data },
+        ];
+        savePracticeSession({
+          config,
+          questions: sessionQuestions,
+          currentIndex,
+          answers: nextAnswers,
+        });
+        return nextAnswers;
+      });
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -337,11 +410,24 @@ export default function Home({
 
   const nextQuestion = () => {
     if (currentIndex + 1 >= sessionQuestions.length) {
+      savePracticeSession({
+        config,
+        questions: sessionQuestions,
+        currentIndex,
+        answers,
+      });
       goTo("results");
       return;
     }
 
-    setCurrentIndex((index) => index + 1);
+    const nextIndex = currentIndex + 1;
+    savePracticeSession({
+      config,
+      questions: sessionQuestions,
+      currentIndex: nextIndex,
+      answers,
+    });
+    setCurrentIndex(nextIndex);
     setAnswer("");
     setCurrentGrade(null);
     setError("");
@@ -356,11 +442,18 @@ export default function Home({
       return;
     }
 
-    setSessionQuestions((previous) =>
-      previous.map((question, index) =>
+    setSessionQuestions((previous) => {
+      const nextQuestions = previous.map((question, index) =>
         index === currentIndex ? replacement : question,
-      ),
-    );
+      );
+      savePracticeSession({
+        config,
+        questions: nextQuestions,
+        currentIndex,
+        answers,
+      });
+      return nextQuestions;
+    });
     setAnswer("");
     setCurrentGrade(null);
     setError("");
@@ -385,11 +478,18 @@ export default function Home({
 
       const generatedQuestion = data.question as InterviewQuestion;
 
-      setSessionQuestions((previous) =>
-        previous.map((question, index) =>
+      setSessionQuestions((previous) => {
+        const nextQuestions = previous.map((question, index) =>
           index === currentIndex ? generatedQuestion : question,
-        ),
-      );
+        );
+        savePracticeSession({
+          config,
+          questions: nextQuestions,
+          currentIndex,
+          answers,
+        });
+        return nextQuestions;
+      });
       setAnswer("");
       setCurrentGrade(null);
     } catch (caughtError) {
@@ -411,17 +511,21 @@ export default function Home({
   };
 
   const openMiQuestion = (index: number) => {
+    const questionNumber = index + 1;
+    const shuffleQuery = miShuffle ? "&shuffle=1" : "";
+
     setMiIndex(index);
     setMiAnswer("");
     setShowMiSample(false);
     setMiGrade(null);
     setError("");
-    goTo("miQuiz");
+    setScreen("miQuiz");
+    router.push(`/MI400/practice?question=${questionNumber}${shuffleQuery}`);
   };
 
   const nextMiQuestion = () => {
     const nextIndex = miShuffle
-      ? Math.floor(Math.random() * mi400Questions.length)
+      ? randomIndexExcept(mi400Questions.length, miIndex)
       : miIndex + 1 >= mi400Questions.length
         ? 0
         : miIndex + 1;
@@ -479,18 +583,22 @@ export default function Home({
   };
 
   const openBehavioralQuestion = (index: number) => {
+    const questionNumber = index + 1;
+    const shuffleQuery = behavioralShuffle ? "&shuffle=1" : "";
+
     setBehavioralIndex(index);
     setBehavioralAnswer("");
     setShowBehavioralSample(false);
     setBehavioralGrade(null);
     setError("");
-    goTo("behavioralQuiz");
+    setScreen("behavioralQuiz");
+    router.push(`/BehavioralPractice/practice?question=${questionNumber}${shuffleQuery}`);
   };
 
   const nextBehavioralQuestion = () => {
     const nextIndex =
       behavioralShuffle
-        ? Math.floor(Math.random() * behavioralQuestions.length)
+        ? randomIndexExcept(behavioralQuestions.length, behavioralIndex)
         : behavioralIndex + 1 >= behavioralQuestions.length
           ? 0
           : behavioralIndex + 1;
