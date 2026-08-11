@@ -55,6 +55,10 @@ type StoredPracticeSession = {
   currentIndex: number;
   answers: SessionAnswer[];
 };
+type FollowUpMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
 
 const defaultConfig: SessionConfig = {
   category: "All Categories",
@@ -202,11 +206,13 @@ export default function Home({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answer, setAnswer] = useState("");
   const [currentGrade, setCurrentGrade] = useState<GradeResponse | null>(null);
+  const [practiceFollowUps, setPracticeFollowUps] = useState<FollowUpMessage[]>([]);
   const [answers, setAnswers] = useState<SessionAnswer[]>([]);
   const [miIndex, setMiIndex] = useState(0);
   const [miAnswer, setMiAnswer] = useState("");
   const [showMiSample, setShowMiSample] = useState(false);
   const [miGrade, setMiGrade] = useState<GradeResponse | null>(null);
+  const [miFollowUps, setMiFollowUps] = useState<FollowUpMessage[]>([]);
   const [miGeneratedQuestion, setMiGeneratedQuestion] = useState<MIQuestion | null>(null);
   const [isMiGrading, setIsMiGrading] = useState(false);
   const [miShuffle, setMiShuffle] = useState(false);
@@ -215,6 +221,7 @@ export default function Home({
   const [behavioralAnswer, setBehavioralAnswer] = useState("");
   const [showBehavioralSample, setShowBehavioralSample] = useState(false);
   const [behavioralGrade, setBehavioralGrade] = useState<GradeResponse | null>(null);
+  const [behavioralFollowUps, setBehavioralFollowUps] = useState<FollowUpMessage[]>([]);
   const [isBehavioralGrading, setIsBehavioralGrading] = useState(false);
   const [behavioralShuffle, setBehavioralShuffle] = useState(false);
   const [behavioralSkipped, setBehavioralSkipped] = useState(0);
@@ -296,6 +303,7 @@ export default function Home({
               setAnswers(parsedSession.answers);
               setAnswer("");
               setCurrentGrade(null);
+              setPracticeFollowUps([]);
             } catch {
               sessionStorage.removeItem(practiceSessionStorageKey);
             }
@@ -357,6 +365,7 @@ export default function Home({
     setCurrentIndex(0);
     setAnswer("");
     setCurrentGrade(null);
+    setPracticeFollowUps([]);
     setAnswers([]);
     setError("");
     goTo("quiz");
@@ -385,6 +394,7 @@ export default function Home({
       }
 
       setCurrentGrade(data);
+      setPracticeFollowUps([]);
       setAnswers((previous) => {
         const nextAnswers = [
           ...previous,
@@ -431,6 +441,7 @@ export default function Home({
     setCurrentIndex(nextIndex);
     setAnswer("");
     setCurrentGrade(null);
+    setPracticeFollowUps([]);
     setError("");
   };
 
@@ -457,6 +468,7 @@ export default function Home({
     });
     setAnswer("");
     setCurrentGrade(null);
+    setPracticeFollowUps([]);
     setError("");
   };
 
@@ -493,6 +505,7 @@ export default function Home({
       });
       setAnswer("");
       setCurrentGrade(null);
+      setPracticeFollowUps([]);
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -546,6 +559,7 @@ export default function Home({
       });
       setAnswer("");
       setCurrentGrade(null);
+      setPracticeFollowUps([]);
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -561,6 +575,7 @@ export default function Home({
     goTo("home");
     setAnswer("");
     setCurrentGrade(null);
+    setPracticeFollowUps([]);
     setError("");
   };
 
@@ -572,6 +587,7 @@ export default function Home({
     setMiAnswer("");
     setShowMiSample(false);
     setMiGrade(null);
+    setMiFollowUps([]);
     setMiGeneratedQuestion(null);
     setError("");
     setScreen("miQuiz");
@@ -625,6 +641,7 @@ export default function Home({
       }
 
       setMiGrade(data);
+      setMiFollowUps([]);
       setShowMiSample(true);
     } catch (caughtError) {
       setError(
@@ -675,6 +692,7 @@ export default function Home({
       setMiAnswer("");
       setShowMiSample(false);
       setMiGrade(null);
+      setMiFollowUps([]);
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -694,6 +712,7 @@ export default function Home({
     setBehavioralAnswer("");
     setShowBehavioralSample(false);
     setBehavioralGrade(null);
+    setBehavioralFollowUps([]);
     setError("");
     setScreen("behavioralQuiz");
     router.push(`/BehavioralPractice/practice?question=${questionNumber}${shuffleQuery}`);
@@ -742,6 +761,7 @@ export default function Home({
       }
 
       setBehavioralGrade(data);
+      setBehavioralFollowUps([]);
       setShowBehavioralSample(true);
     } catch (caughtError) {
       setError(
@@ -1084,6 +1104,19 @@ export default function Home({
                       {currentMiQuestion.sampleAnswer}
                     </p>
                   </div>
+                  {miGrade && (
+                    <FollowUpCoach
+                      question={{
+                        prompt: currentMiQuestion.question,
+                        category: "M&I 400 Questions",
+                        referenceAnswer: currentMiQuestion.sampleAnswer,
+                      }}
+                      userAnswer={miAnswer}
+                      grade={miGrade}
+                      messages={miFollowUps}
+                      onMessagesChange={setMiFollowUps}
+                    />
+                  )}
                 </>
               )}
             </div>
@@ -1270,6 +1303,19 @@ export default function Home({
                       {currentBehavioralQuestion.sampleAnswer}
                     </p>
                   </div>
+                  {behavioralGrade && (
+                    <FollowUpCoach
+                      question={{
+                        prompt: currentBehavioralQuestion.question,
+                        category: "Behavioral Practice",
+                        referenceAnswer: currentBehavioralQuestion.sampleAnswer,
+                      }}
+                      userAnswer={behavioralAnswer}
+                      grade={behavioralGrade}
+                      messages={behavioralFollowUps}
+                      onMessagesChange={setBehavioralFollowUps}
+                    />
+                  )}
                 </>
               )}
             </div>
@@ -1582,7 +1628,22 @@ export default function Home({
                 )}
               </div>
 
-              {currentGrade && <Feedback grade={currentGrade} />}
+              {currentGrade && (
+                <>
+                  <Feedback grade={currentGrade} />
+                  <FollowUpCoach
+                    question={{
+                      prompt: currentQuestion.question,
+                      category: currentQuestion.category,
+                      referenceAnswer: currentQuestion.referenceAnswer,
+                    }}
+                    userAnswer={answer}
+                    grade={currentGrade}
+                    messages={practiceFollowUps}
+                    onMessagesChange={setPracticeFollowUps}
+                  />
+                </>
+              )}
             </div>
 
             <aside className="border border-line bg-white p-5">
@@ -1761,6 +1822,156 @@ function SourceCredit() {
       </a>
       . Market Technicals is an independent study aid and is not affiliated with, sponsored by,
       or endorsed by M&I or BIWS. AI feedback is generated separately from your submitted answer.
+    </div>
+  );
+}
+
+function gradeContext(grade: GradeResponse) {
+  return [
+    `Score: ${grade.score}/100`,
+    `Correct points: ${grade.correctPoints.join("; ") || "None listed"}`,
+    `Missing points: ${grade.missingPoints.join("; ") || "None listed"}`,
+    `Incorrect statements: ${grade.incorrectStatements.join("; ") || "None listed"}`,
+    `Improved answer: ${grade.improvedAnswer}`,
+    `Follow-up question: ${grade.followUpQuestion}`,
+    `Overall feedback: ${grade.overallFeedback}`,
+  ].join("\n");
+}
+
+function FollowUpCoach({
+  question,
+  userAnswer,
+  grade,
+  messages,
+  onMessagesChange,
+}: {
+  question: {
+    prompt: string;
+    category?: string;
+    referenceAnswer: string;
+  };
+  userAnswer: string;
+  grade: GradeResponse;
+  messages: FollowUpMessage[];
+  onMessagesChange: (messages: FollowUpMessage[]) => void;
+}) {
+  const [draft, setDraft] = useState("");
+  const [isAsking, setIsAsking] = useState(false);
+  const [localError, setLocalError] = useState("");
+
+  const askFollowUp = async () => {
+    const content = draft.trim();
+
+    if (!content) {
+      setLocalError("Ask a follow-up question first.");
+      return;
+    }
+
+    const nextMessages: FollowUpMessage[] = [...messages, { role: "user", content }];
+    onMessagesChange(nextMessages);
+    setDraft("");
+    setIsAsking(true);
+    setLocalError("");
+
+    try {
+      const response = await fetch("/api/follow-up", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question,
+          userAnswer,
+          feedback: gradeContext(grade),
+          messages: nextMessages,
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error ?? "Unable to answer the follow-up question.");
+      }
+
+      onMessagesChange([
+        ...nextMessages,
+        { role: "assistant", content: data.answer as string },
+      ]);
+    } catch (caughtError) {
+      onMessagesChange(messages);
+      setLocalError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to answer the follow-up question.",
+      );
+    } finally {
+      setIsAsking(false);
+    }
+  };
+
+  return (
+    <div className="mt-6 border border-line bg-white p-4">
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center border border-mint bg-mint/10 text-mint">
+          <MessageSquareText size={18} />
+        </div>
+        <div>
+          <h3 className="text-lg font-black text-black">Ask a follow-up</h3>
+          <p className="text-sm text-steel">
+            Use the box to clarify the sample answer, your feedback, or how to improve your wording.
+          </p>
+        </div>
+      </div>
+
+      {messages.length > 0 && (
+        <div className="mt-4 grid gap-3">
+          {messages.map((message, index) => (
+            <div
+              key={`${message.role}-${index}`}
+              className={`border p-3 text-sm leading-6 ${
+                message.role === "user"
+                  ? "border-mint/50 bg-mint/10 text-ink"
+                  : "border-line bg-panel text-ink"
+              }`}
+            >
+              <div className="mb-1 text-xs font-black uppercase tracking-[0.12em] text-steel">
+                {message.role === "user" ? "You" : "Coach"}
+              </div>
+              <p className="whitespace-pre-line">{message.content}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <textarea
+        value={draft}
+        onChange={(event) => setDraft(event.target.value)}
+        disabled={isAsking}
+        placeholder="Ask why something was missing, request a shorter answer, or practice the interviewer follow-up."
+        className="mt-4 min-h-28 w-full resize-y border border-line bg-panel p-3 leading-6 text-ink outline-none placeholder:text-slate-500 focus:border-mint disabled:opacity-70"
+      />
+
+      {localError && (
+        <div className="mt-3 flex items-center gap-2 border border-rose-400/40 bg-rose-400/10 p-3 text-sm text-rose-800">
+          <CircleAlert size={16} />
+          {localError}
+        </div>
+      )}
+
+      <button
+        onClick={askFollowUp}
+        disabled={isAsking}
+        className="mt-3 inline-flex h-11 items-center justify-center gap-2 bg-mint px-4 font-black text-ink transition hover:bg-[#89a9cf] disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {isAsking ? (
+          <>
+            <Loader2 className="animate-spin" size={18} />
+            Asking
+          </>
+        ) : (
+          <>
+            Ask Follow-up
+            <ArrowRight size={18} />
+          </>
+        )}
+      </button>
     </div>
   );
 }

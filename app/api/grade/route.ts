@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { gradeSchema } from "@/lib/evaluation-schema";
 import { fallbackGrade } from "@/lib/fallback-grading";
 import { questions } from "@/lib/questions";
-import type { InterviewQuestion } from "@/lib/types";
+import type { GradeResponse, InterviewQuestion } from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -66,6 +66,122 @@ type GradeQuestion = InterviewQuestion | {
   marketScenario?: string | null;
 };
 
+const stopWords = new Set([
+  "a",
+  "an",
+  "and",
+  "are",
+  "as",
+  "at",
+  "be",
+  "but",
+  "by",
+  "for",
+  "from",
+  "i",
+  "in",
+  "is",
+  "it",
+  "of",
+  "on",
+  "or",
+  "so",
+  "that",
+  "the",
+  "this",
+  "to",
+  "with",
+  "would",
+]);
+
+const normalizeAnswer = (answer: string) =>
+  answer
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const answerTerms = (answer: string) =>
+  normalizeAnswer(answer)
+    .split(" ")
+    .filter((term) => term.length > 2 && !stopWords.has(term));
+
+const referenceMissingPoints = (referenceAnswer: string) =>
+  referenceAnswer
+    .replace(/\n+/g, " ")
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => answerTerms(sentence).length >= 3)
+    .slice(0, 5);
+
+function nonAnswerGrade(question: GradeQuestion): GradeResponse {
+  const missingPoints =
+    question.expectedConcepts && question.expectedConcepts.length > 0
+      ? question.expectedConcepts.slice(0, 5)
+      : referenceMissingPoints(question.referenceAnswer);
+
+  return {
+    score: 5,
+    correctPoints: [],
+    missingPoints,
+    incorrectStatements: ["The submitted answer is too short to evaluate."],
+    improvedAnswer: question.referenceAnswer,
+    followUpQuestion:
+      question.followUpConcept ??
+      "Can you try again with the main steps and one sentence explaining why each step matters?",
+    overallFeedback:
+      "This looks like a non-answer rather than an interview response. Give at least a few concrete points before comparing against the sample answer.",
+    gradingMode: "fallback" as const,
+  };
+}
+
+function scoreCapForAnswer(answer: string) {
+  const normalized = normalizeAnswer(answer);
+  const terms = answerTerms(answer);
+  const uniqueTerms = new Set(terms);
+
+  if (normalized.length < 8 || terms.length < 2 || uniqueTerms.size < 2) {
+    return 5;
+  }
+
+  if (normalized.length < 35 || terms.length < 5) {
+    return 25;
+  }
+
+  if (normalized.length < 90 || terms.length < 10) {
+    return 55;
+  }
+
+  return 100;
+}
+
+function applyAnswerQualityCap(
+  grade: GradeResponse,
+  question: GradeQuestion,
+  answer: string,
+): GradeResponse {
+  const cap = scoreCapForAnswer(answer);
+
+  if (cap === 100 || grade.score <= cap) {
+    return grade;
+  }
+
+  if (cap === 5) {
+    return nonAnswerGrade(question);
+  }
+
+  return {
+    ...grade,
+    score: cap,
+    incorrectStatements:
+      grade.incorrectStatements.length > 0
+        ? grade.incorrectStatements
+        : ["The submitted answer is too short or underdeveloped for a higher score."],
+    overallFeedback:
+      `${grade.overallFeedback} Score capped because the submitted answer is too short or underdeveloped to demonstrate full understanding.`,
+  };
+}
+
 function findQuestion(question: GradeQuestion) {
   return questions.find((candidate) => candidate.id === question.id) ?? question;
 }
@@ -126,7 +242,7 @@ async function gradeWithGemini(question: GradeQuestion, answer: string) {
       systemInstruction: {
         parts: [
           {
-            text: "You are a fair Investment Banking and Private Equity technical interviewer. Grade spoken-style answers for conceptual understanding. Give credit for informal but correct reasoning. Do not require exact wording. Identify material finance errors clearly. Keep feedback concise and practical.",
+            text: "You are a fair but strict Investment Banking and Private Equity technical interviewer. Grade spoken-style answers for conceptual understanding. Give credit for informal but correct reasoning, but do not infer knowledge from vague, one-word, filler, or placeholder responses. Non-answers should receive 0-10. Very short answers with only one partial idea should usually receive 10-35. Identify material finance errors clearly. Keep feedback concise and practical.",
           },
         ],
       },
@@ -137,7 +253,7 @@ async function gradeWithGemini(question: GradeQuestion, answer: string) {
             {
               text: JSON.stringify({
                 instruction:
-                  "Return only the requested JSON object. The improved answer should sound like a strong spoken interview response, not a textbook chapter.",
+                  "Return only the requested JSON object. Grade only what the user actually wrote. The improved answer should sound like a strong spoken interview response, not a textbook chapter.",
                 question: question.question,
                 category: question.category ?? "M&I Question Bank",
                 difficulty: question.difficulty ?? "Not specified",
@@ -205,18 +321,35 @@ export async function POST(request: Request) {
       );
     }
 
+    if (scoreCapForAnswer(answer) === 5) {
+      return NextResponse.json(nonAnswerGrade(question));
+    }
+
     if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json(
-        fallbackGrade(toFallbackQuestion(question), answer, "GEMINI_API_KEY is not configured"),
+        applyAnswerQualityCap(
+          fallbackGrade(toFallbackQuestion(question), answer, "GEMINI_API_KEY is not configured"),
+          question,
+          answer,
+        ),
       );
     }
 
     const parsed = await gradeWithGemini(question, answer);
-    return NextResponse.json({ ...parsed, gradingMode: "ai" });
+    return NextResponse.json(
+      applyAnswerQualityCap({ ...parsed, gradingMode: "ai" }, question, answer),
+    );
   } catch (error) {
     if (body?.question && body.answer && error instanceof Error) {
+      const question = findQuestion(body.question);
+      const answer = body.answer;
+
       return NextResponse.json(
-        fallbackGrade(toFallbackQuestion(findQuestion(body.question)), body.answer, error.message),
+        applyAnswerQualityCap(
+          fallbackGrade(toFallbackQuestion(question), answer, error.message),
+          question,
+          answer,
+        ),
       );
     }
 
