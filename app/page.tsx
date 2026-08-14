@@ -8,6 +8,8 @@ import {
   LineChart,
   Loader2,
   MessageSquareText,
+  Mic,
+  MicOff,
   RefreshCcw,
   Shuffle,
   Newspaper,
@@ -59,6 +61,39 @@ type FollowUpMessage = {
   role: "user" | "assistant";
   content: string;
 };
+type SpeechRecognitionResultItem = {
+  transcript: string;
+};
+type SpeechRecognitionAlternative = {
+  readonly [index: number]: SpeechRecognitionResultItem;
+  isFinal: boolean;
+};
+type SpeechRecognitionResultListLike = {
+  length: number;
+  readonly [index: number]: SpeechRecognitionAlternative;
+};
+type SpeechRecognitionEventLike = {
+  resultIndex: number;
+  results: SpeechRecognitionResultListLike;
+};
+type SpeechRecognitionLike = {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onend: (() => void) | null;
+  onerror: ((event: { error: string }) => void) | null;
+  start: () => void;
+  stop: () => void;
+};
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
+
+declare global {
+  interface Window {
+    SpeechRecognition?: SpeechRecognitionConstructor;
+    webkitSpeechRecognition?: SpeechRecognitionConstructor;
+  }
+}
 
 const defaultConfig: SessionConfig = {
   category: "All Categories",
@@ -1005,12 +1040,11 @@ export default function Home({
                 {currentMiQuestion.question}
               </h2>
 
-              <textarea
+              <AnswerComposer
                 value={miAnswer}
-                onChange={(event) => setMiAnswer(event.target.value)}
+                onChange={setMiAnswer}
                 disabled={showMiSample || isMiGrading}
                 placeholder="Answer this like you would in an interview, then compare against the M&I sample answer."
-                className="mt-5 min-h-52 w-full resize-y border border-line bg-white p-4 leading-7 text-ink outline-none placeholder:text-slate-500 focus:border-mint disabled:opacity-70"
               />
 
               {error && (
@@ -1225,12 +1259,11 @@ export default function Home({
                 {currentBehavioralQuestion.question}
               </h2>
 
-              <textarea
+              <AnswerComposer
                 value={behavioralAnswer}
-                onChange={(event) => setBehavioralAnswer(event.target.value)}
+                onChange={setBehavioralAnswer}
                 disabled={showBehavioralSample || isBehavioralGrading}
                 placeholder="Draft your own behavioral answer, then compare it with the M&I sample."
-                className="mt-5 min-h-52 w-full resize-y border border-line bg-white p-4 leading-7 text-ink outline-none placeholder:text-slate-500 focus:border-mint disabled:opacity-70"
               />
 
               {error && (
@@ -1534,12 +1567,11 @@ export default function Home({
                 {currentQuestion.question}
               </h2>
 
-              <textarea
+              <AnswerComposer
                 value={answer}
-                onChange={(event) => setAnswer(event.target.value)}
+                onChange={setAnswer}
                 disabled={Boolean(currentGrade) || isGrading}
                 placeholder="Answer like you would in an interview. A clear, structured spoken response is enough."
-                className="mt-5 min-h-52 w-full resize-y border border-line bg-white p-4 leading-7 text-ink outline-none placeholder:text-slate-500 focus:border-mint disabled:opacity-70"
               />
 
               {error && (
@@ -1747,6 +1779,137 @@ export default function Home({
         )}
       </div>
     </main>
+  );
+}
+
+function AnswerComposer({
+  value,
+  onChange,
+  disabled,
+  placeholder,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+  placeholder: string;
+}) {
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const baseTextRef = useRef("");
+  const [isListening, setIsListening] = useState(false);
+  const [voiceError, setVoiceError] = useState("");
+
+  useEffect(() => {
+    if (disabled && recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+      setIsListening(false);
+    }
+  }, [disabled]);
+
+  useEffect(() => {
+    return () => {
+      recognitionRef.current?.stop();
+    };
+  }, []);
+
+  const toggleListening = () => {
+    if (disabled) return;
+
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+      setIsListening(false);
+      return;
+    }
+
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!Recognition) {
+      setVoiceError("Voice input is not supported in this browser.");
+      return;
+    }
+
+    const recognition = new Recognition();
+    baseTextRef.current = value;
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
+    recognition.onresult = (event) => {
+      let spokenText = "";
+
+      for (let index = 0; index < event.results.length; index += 1) {
+        spokenText += event.results[index][0].transcript;
+      }
+
+      const cleanedTranscript = spokenText.trim();
+      const baseText = baseTextRef.current.trimEnd();
+      onChange(
+        [baseText, cleanedTranscript]
+          .filter(Boolean)
+          .join(baseText && cleanedTranscript ? " " : ""),
+      );
+    };
+    recognition.onerror = (event) => {
+      if (event.error === "no-speech") return;
+
+      setVoiceError(
+        event.error === "not-allowed"
+          ? "Microphone access was blocked."
+          : "Voice input stopped. Try the mic again.",
+      );
+      setIsListening(false);
+      recognitionRef.current = null;
+    };
+    recognition.onend = () => {
+      setIsListening(false);
+      recognitionRef.current = null;
+    };
+
+    try {
+      recognition.start();
+      recognitionRef.current = recognition;
+      setIsListening(true);
+      setVoiceError("");
+    } catch {
+      setVoiceError("Voice input could not start. Try the mic again.");
+      setIsListening(false);
+      recognitionRef.current = null;
+    }
+  };
+
+  return (
+    <>
+      <div className="relative mt-5">
+        <textarea
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          disabled={disabled}
+          placeholder={placeholder}
+          className="min-h-52 w-full resize-y border border-line bg-white p-4 pb-16 leading-7 text-ink outline-none placeholder:text-slate-500 focus:border-mint disabled:opacity-70"
+        />
+        <button
+          type="button"
+          onClick={toggleListening}
+          disabled={disabled}
+          className={`absolute bottom-4 right-4 inline-flex h-11 w-11 items-center justify-center border transition disabled:cursor-not-allowed disabled:opacity-50 ${
+            isListening
+              ? "border-mint bg-mint text-black shadow-terminal"
+              : "border-line bg-panel text-steel hover:border-mint hover:text-ink"
+          }`}
+          title={
+            isListening
+              ? "Stop voice input"
+              : "Start voice input"
+          }
+          aria-label={isListening ? "Stop voice input" : "Start voice input"}
+        >
+          {isListening ? <MicOff size={19} /> : <Mic size={19} />}
+        </button>
+      </div>
+      {voiceError && (
+        <div className="mt-2 text-sm text-rose-800">{voiceError}</div>
+      )}
+    </>
   );
 }
 
