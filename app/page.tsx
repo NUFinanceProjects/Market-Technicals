@@ -9,7 +9,6 @@ import {
   Loader2,
   MessageSquareText,
   Mic,
-  MicOff,
   RefreshCcw,
   Shuffle,
   Newspaper,
@@ -1903,7 +1902,7 @@ function AnswerComposer({
           }
           aria-label={isListening ? "Stop voice input" : "Start voice input"}
         >
-          {isListening ? <MicOff size={19} /> : <Mic size={19} />}
+          <Mic size={19} />
         </button>
       </div>
       {voiceError && (
