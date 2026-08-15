@@ -1411,21 +1411,57 @@ export default function Home({
   return (
     <main className="min-h-screen bg-[#f7f7f4] text-ink">
       <header className="border-b border-[#6288b4] bg-mint text-ink">
-        <div className="flex min-h-16 w-full items-center gap-5 px-4 py-2 sm:px-7 lg:px-12">
-          <button
-            onClick={reset}
-            className="flex h-12 w-28 shrink-0 items-center text-left text-[1.22rem] font-black leading-[0.82] tracking-normal text-black sm:w-36 sm:text-[1.42rem]"
-            aria-label="Market Technicals home"
-          >
-            Market
-            <br />
-            Technicals
-          </button>
+        <div className="mx-auto flex min-h-16 w-full max-w-7xl flex-col gap-2 px-4 py-2 sm:px-6 lg:flex-row lg:items-center lg:gap-5 lg:px-8">
+          <div className="flex min-w-0 items-center justify-between gap-4">
+            <button
+              onClick={reset}
+              className="flex h-11 w-28 shrink-0 items-center text-left text-[1.18rem] font-black leading-[0.82] tracking-normal text-black sm:w-36 sm:text-[1.42rem]"
+              aria-label="Market Technicals home"
+            >
+              Market
+              <br />
+              Technicals
+            </button>
+            <div className="flex shrink-0 items-center gap-3 lg:hidden">
+              <Show when="signed-out">
+                <SignInButton mode="modal">
+                  <button className="inline-flex h-10 items-center justify-center gap-2 border-2 border-black bg-mint px-3 font-sans text-sm font-black text-black transition hover:bg-[#89a9cf]">
+                    <UserCircle size={16} />
+                    Sign In
+                  </button>
+                </SignInButton>
+              </Show>
+              <Show when="signed-in">
+                <button
+                  onClick={() => goTo("account")}
+                  className={`inline-flex h-10 items-center justify-center gap-2 border px-3 font-sans text-sm font-black transition ${
+                    screen === "account"
+                      ? "border-black bg-mint text-black shadow-terminal"
+                      : "border-black bg-mint text-black hover:bg-[#89a9cf]"
+                  }`}
+                >
+                  {user?.imageUrl ? (
+                    <Image
+                      src={user.imageUrl}
+                      alt=""
+                      width={22}
+                      height={22}
+                      unoptimized
+                      className="h-5 w-5 rounded-full object-cover ring-1 ring-black/20"
+                    />
+                  ) : (
+                    <UserCircle size={16} />
+                  )}
+                  Profile
+                </button>
+              </Show>
+            </div>
+          </div>
           <nav
             ref={navRef}
-            className="flex min-w-0 flex-1 flex-wrap items-center overflow-hidden font-sans text-[0.95rem] font-medium lg:text-[1.02rem] [&_button]:whitespace-nowrap"
+            className="flex min-w-0 flex-1 items-center gap-6 overflow-x-auto pb-1 font-sans text-[0.9rem] font-medium sm:text-[0.95rem] lg:flex-wrap lg:justify-between lg:gap-8 lg:overflow-hidden lg:pb-0 lg:text-[1.02rem] [&_button]:whitespace-nowrap"
           >
-            <div className="flex min-w-0 items-center gap-x-6 gap-y-2 lg:gap-x-8">
+            <div className="flex min-w-max items-center gap-x-5 gap-y-2 lg:min-w-0 lg:gap-x-8">
               <button
                 onClick={() => goTo("mi")}
                 className={screen === "mi" || screen === "miQuiz" ? "underline decoration-2 underline-offset-4" : "hover:underline"}
@@ -1454,7 +1490,7 @@ export default function Home({
               </button>
             </div>
             <div className="hidden flex-1 lg:block" />
-            <div className="flex min-w-0 items-center gap-x-6 gap-y-2 lg:gap-x-8">
+            <div className="flex min-w-max items-center gap-x-5 gap-y-2 lg:min-w-0 lg:gap-x-8">
               <button
                 onClick={() => goTo("setup", "Mixed Practice")}
                 className={
@@ -1487,7 +1523,7 @@ export default function Home({
               </button>
             </div>
           </nav>
-          <div className="ml-auto hidden shrink-0 items-center gap-3 sm:flex">
+          <div className="ml-auto hidden shrink-0 items-center gap-3 lg:flex">
             <Show when="signed-out">
               <SignInButton mode="modal">
                 <button className="inline-flex h-11 items-center justify-center gap-2 border-2 border-black bg-mint px-4 font-sans text-sm font-black text-black transition hover:bg-[#89a9cf]">
