@@ -1400,10 +1400,10 @@ export default function Home({
               <Show when="signed-in">
                 <button
                   onClick={() => goTo("account")}
-                  className={`inline-flex h-10 items-center justify-center gap-2 border px-3 font-sans text-sm font-black transition ${
+                  className={`inline-flex h-9 items-center justify-center gap-2 px-1 font-sans text-sm font-black text-black transition hover:underline ${
                     screen === "account"
-                      ? "border-black bg-mint text-black shadow-terminal"
-                      : "border-black bg-mint text-black hover:bg-[#89a9cf]"
+                      ? "underline decoration-2 underline-offset-4"
+                      : ""
                   }`}
                 >
                   {user?.imageUrl ? (
@@ -1427,7 +1427,7 @@ export default function Home({
             <button
               type="button"
               onClick={() => setIsMobileModesOpen((open) => !open)}
-              className="flex h-10 w-full items-center justify-between border border-black/40 bg-mint px-3 font-sans text-sm font-black text-black transition hover:bg-[#89a9cf]"
+              className="flex h-9 w-full items-center justify-between border border-black/40 bg-mint px-3 font-sans text-sm font-black text-black transition hover:bg-[#89a9cf]"
               aria-expanded={isMobileModesOpen}
             >
               Modes
@@ -1441,7 +1441,7 @@ export default function Home({
                 <button
                   type="button"
                   onClick={() => goTo("mi")}
-                  className={`px-3 py-3 text-left transition hover:bg-white ${
+                  className={`px-3 py-2 text-left transition hover:bg-white ${
                     screen === "mi" || screen === "miQuiz" ? "bg-white underline" : ""
                   }`}
                 >
@@ -1450,7 +1450,7 @@ export default function Home({
                 <button
                   type="button"
                   onClick={() => goTo("setup", "Technical Questions")}
-                  className={`px-3 py-3 text-left transition hover:bg-white ${
+                  className={`px-3 py-2 text-left transition hover:bg-white ${
                     isPracticeScreen && config.practiceMode === "Technical Questions"
                       ? "bg-white underline"
                       : ""
@@ -1461,7 +1461,7 @@ export default function Home({
                 <button
                   type="button"
                   onClick={() => goTo("setup", "Market Scenarios")}
-                  className={`px-3 py-3 text-left transition hover:bg-white ${
+                  className={`px-3 py-2 text-left transition hover:bg-white ${
                     isPracticeScreen && config.practiceMode === "Market Scenarios"
                       ? "bg-white underline"
                       : ""
@@ -1472,7 +1472,7 @@ export default function Home({
                 <button
                   type="button"
                   onClick={() => goTo("setup", "Mixed Practice")}
-                  className={`px-3 py-3 text-left transition hover:bg-white ${
+                  className={`px-3 py-2 text-left transition hover:bg-white ${
                     isPracticeScreen && config.practiceMode === "Mixed Practice"
                       ? "bg-white underline"
                       : ""
@@ -1483,7 +1483,7 @@ export default function Home({
                 <button
                   type="button"
                   onClick={() => goTo("behavioral")}
-                  className={`px-3 py-3 text-left transition hover:bg-white ${
+                  className={`px-3 py-2 text-left transition hover:bg-white ${
                     screen === "behavioral" || screen === "behavioralQuiz"
                       ? "bg-white underline"
                       : ""
@@ -1494,7 +1494,7 @@ export default function Home({
                 <button
                   type="button"
                   onClick={() => goTo("prep")}
-                  className={`px-3 py-3 text-left transition hover:bg-white ${
+                  className={`px-3 py-2 text-left transition hover:bg-white ${
                     screen === "prep" ? "bg-white underline" : ""
                   }`}
                 >
@@ -3096,7 +3096,7 @@ function BehavioralStoriesPanel({
       <div className="mt-5 grid gap-4">
         {stories.map((story, index) => (
           <div key={story.id} className="border border-line bg-white p-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex items-center gap-2 sm:gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center border border-mint bg-mint/10 text-sm font-black text-mint">
                 {index + 1}
               </div>
@@ -3110,7 +3110,7 @@ function BehavioralStoriesPanel({
                 }}
                 placeholder={`Story ${index + 1} title`}
                 aria-label={`Story ${index + 1} title`}
-                className="h-11 w-full border border-line bg-panel px-3 font-black text-black outline-none focus:border-mint"
+                className="h-11 min-w-0 flex-1 border border-line bg-panel px-3 text-sm font-black text-black outline-none focus:border-mint sm:text-base"
               />
               <button
                 type="button"
