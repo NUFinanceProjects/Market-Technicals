@@ -1460,7 +1460,7 @@ export default function Home({
               </Show>
             </div>
           </div>
-          <div className="lg:hidden">
+          <div className="w-1/2 min-w-40 lg:hidden">
             <button
               type="button"
               onClick={() => setIsMobileModesOpen((open) => !open)}
