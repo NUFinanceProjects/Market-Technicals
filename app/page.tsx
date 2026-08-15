@@ -1542,69 +1542,64 @@ export default function Home({
           </div>
           <nav
             ref={navRef}
-            className="hidden min-w-0 flex-1 items-center gap-6 overflow-x-auto pb-1 font-sans text-[0.9rem] font-medium sm:text-[0.95rem] lg:flex lg:flex-wrap lg:justify-between lg:gap-8 lg:overflow-hidden lg:pb-0 lg:text-[1.02rem] [&_button]:whitespace-nowrap"
+            className="hidden min-w-0 flex-1 flex-wrap items-center justify-center gap-x-7 gap-y-2 pb-1 font-sans text-[0.95rem] font-medium lg:flex lg:justify-start lg:gap-x-8 lg:pb-0 lg:text-[1.02rem] xl:justify-between [&_button]:whitespace-nowrap"
           >
-            <div className="flex min-w-max items-center gap-x-5 gap-y-2 lg:min-w-0 lg:gap-x-8">
-              <button
-                onClick={() => goTo("mi")}
-                className={screen === "mi" || screen === "miQuiz" ? "underline decoration-2 underline-offset-4" : "hover:underline"}
-              >
-                M&I 400 Questions
-              </button>
-              <button
-                onClick={() => goTo("setup", "Technical Questions")}
-                className={
-                  isPracticeScreen && config.practiceMode === "Technical Questions"
-                    ? "underline decoration-2 underline-offset-4"
-                    : "hover:underline"
-                }
-              >
-                Technical Questions
-              </button>
-              <button
-                onClick={() => goTo("setup", "Market Scenarios")}
-                className={
-                  isPracticeScreen && config.practiceMode === "Market Scenarios"
-                    ? "underline decoration-2 underline-offset-4"
-                    : "hover:underline"
-                }
-              >
-                Market Scenarios
-              </button>
-            </div>
-            <div className="hidden flex-1 lg:block" />
-            <div className="flex min-w-max items-center gap-x-5 gap-y-2 lg:min-w-0 lg:gap-x-8">
-              <button
-                onClick={() => goTo("setup", "Mixed Practice")}
-                className={
-                  isPracticeScreen && config.practiceMode === "Mixed Practice"
-                    ? "underline decoration-2 underline-offset-4"
-                    : "hover:underline"
-                }
-              >
-                Mixed Practice
-              </button>
-              <button
-                onClick={() => goTo("behavioral")}
-                className={
-                  screen === "behavioral" || screen === "behavioralQuiz"
-                    ? "underline decoration-2 underline-offset-4"
-                    : "hover:underline"
-                }
-              >
-                Behavioral Practice
-              </button>
-              <button
-                onClick={() => goTo("prep")}
-                className={
-                  screen === "prep"
-                    ? "underline decoration-2 underline-offset-4"
-                    : "hover:underline"
-                }
-              >
-                Prep
-              </button>
-            </div>
+            <button
+              onClick={() => goTo("mi")}
+              className={screen === "mi" || screen === "miQuiz" ? "underline decoration-2 underline-offset-4" : "hover:underline"}
+            >
+              M&I 400 Questions
+            </button>
+            <button
+              onClick={() => goTo("setup", "Technical Questions")}
+              className={
+                isPracticeScreen && config.practiceMode === "Technical Questions"
+                  ? "underline decoration-2 underline-offset-4"
+                  : "hover:underline"
+              }
+            >
+              Technical Questions
+            </button>
+            <button
+              onClick={() => goTo("setup", "Market Scenarios")}
+              className={
+                isPracticeScreen && config.practiceMode === "Market Scenarios"
+                  ? "underline decoration-2 underline-offset-4"
+                  : "hover:underline"
+              }
+            >
+              Market Scenarios
+            </button>
+            <button
+              onClick={() => goTo("setup", "Mixed Practice")}
+              className={
+                isPracticeScreen && config.practiceMode === "Mixed Practice"
+                  ? "underline decoration-2 underline-offset-4"
+                  : "hover:underline"
+              }
+            >
+              Mixed Practice
+            </button>
+            <button
+              onClick={() => goTo("behavioral")}
+              className={
+                screen === "behavioral" || screen === "behavioralQuiz"
+                  ? "underline decoration-2 underline-offset-4"
+                  : "hover:underline"
+              }
+            >
+              Behavioral Practice
+            </button>
+            <button
+              onClick={() => goTo("prep")}
+              className={
+                screen === "prep"
+                  ? "underline decoration-2 underline-offset-4"
+                  : "hover:underline"
+              }
+            >
+              Prep
+            </button>
           </nav>
           <div className="ml-auto hidden shrink-0 items-center gap-3 lg:flex">
             <Show when="signed-out">
@@ -1644,7 +1639,7 @@ export default function Home({
       </header>
 
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 pb-8 pt-11 sm:px-6 lg:px-8">
-        <header className="border-b border-line pb-8">
+        <header className={`border-b border-line pb-8 ${screen === "home" ? "" : "hidden sm:block"}`}>
           <div>
             <h1 className="max-w-5xl font-['Times_New_Roman',Georgia,serif] text-5xl font-normal leading-[0.94] tracking-normal text-black sm:text-7xl lg:text-8xl">
               Market Technicals Practice
