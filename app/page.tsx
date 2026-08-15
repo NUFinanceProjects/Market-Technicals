@@ -31,6 +31,7 @@ import {
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { defaultBehavioralStories } from "@/lib/behavioral-stories";
 import { behavioralQuestions } from "@/lib/behavioral-questions";
 import { mi400Questions, type MIQuestion } from "@/lib/mi-400-questions";
 import { questions } from "@/lib/questions";
@@ -202,44 +203,6 @@ const scoreColor = (score: number) => {
   if (score >= 70) return "text-gold";
   return "text-rose-300";
 };
-
-const defaultBehavioralStories: BehavioralStory[] = [
-  {
-    id: "story-leadership",
-    title: "*Leadership*",
-    situation: "",
-    action: "",
-    result: "",
-  },
-  {
-    id: "story-teamwork",
-    title: "*Teamwork*",
-    situation: "",
-    action: "",
-    result: "",
-  },
-  {
-    id: "story-failure",
-    title: "*Failure or Mistake*",
-    situation: "",
-    action: "",
-    result: "",
-  },
-  {
-    id: "story-conflict",
-    title: "*Conflict*",
-    situation: "",
-    action: "",
-    result: "",
-  },
-  {
-    id: "story-technical-interest",
-    title: "*Why IB/this firm*",
-    situation: "",
-    action: "",
-    result: "",
-  },
-];
 
 const exampleStoryTitles = new Set([
   "Leadership",

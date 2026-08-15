@@ -63,8 +63,14 @@ export async function ensureAccountTables() {
       image_url TEXT,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      behavioral_stories_seeded BOOLEAN NOT NULL DEFAULT FALSE,
       deleted_at TIMESTAMPTZ
     )
+  `;
+
+  await sql`
+    ALTER TABLE account_profiles
+    ADD COLUMN IF NOT EXISTS behavioral_stories_seeded BOOLEAN NOT NULL DEFAULT FALSE
   `;
 
   await sql`

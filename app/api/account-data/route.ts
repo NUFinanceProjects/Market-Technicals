@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { defaultBehavioralStories } from "@/lib/behavioral-stories";
 import { ensureAccountTables, sql } from "@/lib/db";
 
 type StoryInput = {
@@ -32,6 +33,25 @@ export async function GET() {
 
   await ensureAccountTables();
 
+  const profiles = await sql`
+    INSERT INTO account_profiles (
+      user_id,
+      last_seen_at
+    )
+    VALUES (
+      ${userId},
+      NOW()
+    )
+    ON CONFLICT (user_id)
+    DO UPDATE SET
+      last_seen_at = NOW(),
+      deleted_at = NULL
+    RETURNING behavioral_stories_seeded
+  `;
+  const hasSeededBehavioralStories = Boolean(
+    profiles[0]?.behavioral_stories_seeded,
+  );
+
   const attempts = await sql`
     SELECT id, mode, question_id, question, score, answered_at
     FROM (
@@ -59,12 +79,58 @@ export async function GET() {
     LIMIT 30
   `;
 
-  const stories = await sql`
+  let stories = await sql`
     SELECT story_id, title, situation, action, result
     FROM behavioral_stories
     WHERE user_id = ${userId}
     ORDER BY updated_at ASC
   `;
+
+  if (stories.length === 0 && !hasSeededBehavioralStories) {
+    for (const story of defaultBehavioralStories) {
+      await sql`
+        INSERT INTO behavioral_stories (
+          user_id,
+          story_id,
+          title,
+          situation,
+          action,
+          result,
+          updated_at
+        )
+        VALUES (
+          ${userId},
+          ${story.id},
+          ${story.title},
+          ${story.situation},
+          ${story.action},
+          ${story.result},
+          NOW()
+        )
+        ON CONFLICT (user_id, story_id)
+        DO NOTHING
+      `;
+    }
+
+    await sql`
+      UPDATE account_profiles
+      SET behavioral_stories_seeded = TRUE
+      WHERE user_id = ${userId}
+    `;
+
+    stories = await sql`
+      SELECT story_id, title, situation, action, result
+      FROM behavioral_stories
+      WHERE user_id = ${userId}
+      ORDER BY updated_at ASC
+    `;
+  } else if (stories.length > 0 && !hasSeededBehavioralStories) {
+    await sql`
+      UPDATE account_profiles
+      SET behavioral_stories_seeded = TRUE
+      WHERE user_id = ${userId}
+    `;
+  }
 
   return NextResponse.json({
     attempts: attempts.map((attempt) => ({
@@ -112,6 +178,24 @@ export async function PATCH(request: Request) {
       WHERE user_id = ${userId}
     `;
 
+    await sql`
+      INSERT INTO account_profiles (
+        user_id,
+        last_seen_at,
+        behavioral_stories_seeded
+      )
+      VALUES (
+        ${userId},
+        NOW(),
+        TRUE
+      )
+      ON CONFLICT (user_id)
+      DO UPDATE SET
+        last_seen_at = NOW(),
+        behavioral_stories_seeded = TRUE,
+        deleted_at = NULL
+    `;
+
     return NextResponse.json({ ok: true });
   }
 
@@ -150,6 +234,24 @@ export async function PATCH(request: Request) {
         updated_at = NOW()
     `;
   }
+
+  await sql`
+    INSERT INTO account_profiles (
+      user_id,
+      last_seen_at,
+      behavioral_stories_seeded
+    )
+    VALUES (
+      ${userId},
+      NOW(),
+      TRUE
+    )
+    ON CONFLICT (user_id)
+    DO UPDATE SET
+      last_seen_at = NOW(),
+      behavioral_stories_seeded = TRUE,
+      deleted_at = NULL
+  `;
 
   return NextResponse.json({ ok: true });
 }
