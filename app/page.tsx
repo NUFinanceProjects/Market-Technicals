@@ -1391,7 +1391,7 @@ export default function Home({
             <div className="flex shrink-0 items-center gap-3 lg:hidden">
               <Show when="signed-out">
                 <SignInButton mode="modal">
-                  <button className="inline-flex h-10 items-center justify-center gap-2 border-2 border-black bg-mint px-3 font-sans text-sm font-black text-black transition hover:bg-[#89a9cf]">
+                  <button className="inline-flex h-9 items-center justify-center gap-2 px-1 font-sans text-sm font-black text-black transition hover:underline">
                     <UserCircle size={16} />
                     Sign In
                   </button>
