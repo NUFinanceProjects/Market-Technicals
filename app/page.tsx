@@ -410,12 +410,15 @@ export default function Home({
   );
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [shareStatus, setShareStatus] = useState("");
+  const [isMobileModesOpen, setIsMobileModesOpen] = useState(false);
   const shareRef = useRef<HTMLDivElement>(null);
   const [expandedQuestionMode, setExpandedQuestionMode] = useState<
     "M&I 400 Questions" | "Behavioral Practice" | null
   >(null);
 
   const goTo = (nextScreen: Screen, nextMode?: PracticeMode) => {
+    setIsMobileModesOpen(false);
+
     const practiceRoute = modeRoutes[nextMode ?? config.practiceMode];
     const route =
       nextScreen === "setup"
@@ -1457,9 +1460,89 @@ export default function Home({
               </Show>
             </div>
           </div>
+          <div className="lg:hidden">
+            <button
+              type="button"
+              onClick={() => setIsMobileModesOpen((open) => !open)}
+              className="flex h-10 w-full items-center justify-between border border-black/40 bg-mint px-3 font-sans text-sm font-black text-black transition hover:bg-[#89a9cf]"
+              aria-expanded={isMobileModesOpen}
+            >
+              Modes
+              <ChevronDown
+                size={18}
+                className={`transition ${isMobileModesOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+            {isMobileModesOpen && (
+              <div className="mt-2 grid border border-[#486b94] bg-[#eef4ec] font-sans text-sm font-semibold text-black shadow-terminal">
+                <button
+                  type="button"
+                  onClick={() => goTo("mi")}
+                  className={`px-3 py-3 text-left transition hover:bg-white ${
+                    screen === "mi" || screen === "miQuiz" ? "bg-white underline" : ""
+                  }`}
+                >
+                  M&I 400 Questions
+                </button>
+                <button
+                  type="button"
+                  onClick={() => goTo("setup", "Technical Questions")}
+                  className={`px-3 py-3 text-left transition hover:bg-white ${
+                    isPracticeScreen && config.practiceMode === "Technical Questions"
+                      ? "bg-white underline"
+                      : ""
+                  }`}
+                >
+                  Technical Questions
+                </button>
+                <button
+                  type="button"
+                  onClick={() => goTo("setup", "Market Scenarios")}
+                  className={`px-3 py-3 text-left transition hover:bg-white ${
+                    isPracticeScreen && config.practiceMode === "Market Scenarios"
+                      ? "bg-white underline"
+                      : ""
+                  }`}
+                >
+                  Market Scenarios
+                </button>
+                <button
+                  type="button"
+                  onClick={() => goTo("setup", "Mixed Practice")}
+                  className={`px-3 py-3 text-left transition hover:bg-white ${
+                    isPracticeScreen && config.practiceMode === "Mixed Practice"
+                      ? "bg-white underline"
+                      : ""
+                  }`}
+                >
+                  Mixed Practice
+                </button>
+                <button
+                  type="button"
+                  onClick={() => goTo("behavioral")}
+                  className={`px-3 py-3 text-left transition hover:bg-white ${
+                    screen === "behavioral" || screen === "behavioralQuiz"
+                      ? "bg-white underline"
+                      : ""
+                  }`}
+                >
+                  Behavioral Practice
+                </button>
+                <button
+                  type="button"
+                  onClick={() => goTo("prep")}
+                  className={`px-3 py-3 text-left transition hover:bg-white ${
+                    screen === "prep" ? "bg-white underline" : ""
+                  }`}
+                >
+                  Prep
+                </button>
+              </div>
+            )}
+          </div>
           <nav
             ref={navRef}
-            className="flex min-w-0 flex-1 items-center gap-6 overflow-x-auto pb-1 font-sans text-[0.9rem] font-medium sm:text-[0.95rem] lg:flex-wrap lg:justify-between lg:gap-8 lg:overflow-hidden lg:pb-0 lg:text-[1.02rem] [&_button]:whitespace-nowrap"
+            className="hidden min-w-0 flex-1 items-center gap-6 overflow-x-auto pb-1 font-sans text-[0.9rem] font-medium sm:text-[0.95rem] lg:flex lg:flex-wrap lg:justify-between lg:gap-8 lg:overflow-hidden lg:pb-0 lg:text-[1.02rem] [&_button]:whitespace-nowrap"
           >
             <div className="flex min-w-max items-center gap-x-5 gap-y-2 lg:min-w-0 lg:gap-x-8">
               <button
