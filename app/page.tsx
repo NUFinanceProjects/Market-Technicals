@@ -1,18 +1,34 @@
 "use client";
 
 import {
+  Show,
+  SignInButton,
+  SignUpButton,
+  useClerk,
+  useUser,
+} from "@clerk/nextjs";
+import {
   ArrowRight,
   BookOpen,
+  Check,
   CircleAlert,
   FileQuestion,
   LineChart,
   Loader2,
+  LogOut,
+  Lock,
   MessageSquareText,
   Mic,
+  Plus,
+  Link,
+  ChevronDown,
   RefreshCcw,
   Shuffle,
   Newspaper,
+  Trash2,
+  UserCircle,
 } from "lucide-react";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { behavioralQuestions } from "@/lib/behavioral-questions";
@@ -39,6 +55,7 @@ type Screen =
   | "miQuiz"
   | "behavioral"
   | "behavioralQuiz"
+  | "account"
   | "prep";
 type SessionConfig = {
   category: CategoryChoice;
@@ -59,6 +76,37 @@ type StoredPracticeSession = {
 type FollowUpMessage = {
   role: "user" | "assistant";
   content: string;
+};
+type ProgressMode =
+  | PracticeMode
+  | "M&I 400 Questions"
+  | "Behavioral Practice";
+type ProgressAttempt = {
+  id: string;
+  mode: ProgressMode;
+  questionId: string;
+  question: string;
+  score: number;
+  answeredAt: string;
+};
+type SessionAverageRecord = {
+  id: string;
+  mode: PracticeMode;
+  averageScore: number;
+  questionCount: number;
+  completedAt: string;
+};
+type BehavioralStory = {
+  id: string;
+  title: string;
+  situation: string;
+  action: string;
+  result: string;
+};
+type StoredProfileData = {
+  attempts: ProgressAttempt[];
+  sessionAverages: SessionAverageRecord[];
+  behavioralStories: BehavioralStory[];
 };
 type SpeechRecognitionResultItem = {
   transcript: string;
@@ -101,6 +149,7 @@ const defaultConfig: SessionConfig = {
   questionCount: 5,
 };
 const practiceSessionStorageKey = "market-technicals:practice-session";
+const profileStorageKey = "market-technicals:profile-v1";
 
 const screenRoutes: Record<Screen, string> = {
   home: "/",
@@ -111,6 +160,7 @@ const screenRoutes: Record<Screen, string> = {
   miQuiz: "/MI400/practice",
   behavioral: "/BehavioralPractice",
   behavioralQuiz: "/BehavioralPractice/practice",
+  account: "/Account",
   prep: "/Prep",
 };
 
@@ -152,6 +202,96 @@ const scoreColor = (score: number) => {
   if (score >= 70) return "text-gold";
   return "text-rose-300";
 };
+
+const defaultBehavioralStories: BehavioralStory[] = [
+  {
+    id: "story-leadership",
+    title: "*Leadership*",
+    situation: "",
+    action: "",
+    result: "",
+  },
+  {
+    id: "story-teamwork",
+    title: "*Teamwork*",
+    situation: "",
+    action: "",
+    result: "",
+  },
+  {
+    id: "story-failure",
+    title: "*Failure or Mistake*",
+    situation: "",
+    action: "",
+    result: "",
+  },
+  {
+    id: "story-conflict",
+    title: "*Conflict*",
+    situation: "",
+    action: "",
+    result: "",
+  },
+  {
+    id: "story-technical-interest",
+    title: "*Why IB/this firm*",
+    situation: "",
+    action: "",
+    result: "",
+  },
+];
+
+const exampleStoryTitles = new Set([
+  "Leadership",
+  "*Leadership*",
+  "Teamwork",
+  "*Teamwork*",
+  "Failure or Mistake",
+  "*Failure or Mistake*",
+  "Conflict",
+  "*Conflict*",
+  "Why Finance",
+  "*Why Finance*",
+  "Why IB/this firm",
+  "*Why IB/this firm*",
+]);
+
+const normalizeExampleStoryTitle = (title: string) => {
+  if (title === "Why Finance" || title === "*Why Finance*") {
+    return "*Why IB/this firm*";
+  }
+
+  if (exampleStoryTitles.has(title) && !title.startsWith("*")) {
+    return `*${title}*`;
+  }
+
+  return title;
+};
+
+const normalizeBehavioralStories = (stories?: BehavioralStory[]) => {
+  if (!stories) return defaultBehavioralStories;
+
+  return stories.slice(0, 8).map((story) => ({
+    ...story,
+    title: normalizeExampleStoryTitle(story.title),
+  }));
+};
+
+const storyHasUserContent = (story: BehavioralStory) =>
+  Boolean(
+    (story.title.trim() && !exampleStoryTitles.has(story.title)) ||
+      story.situation.trim() ||
+      story.action.trim() ||
+      story.result.trim(),
+  );
+
+const emptyProfileData = (): StoredProfileData => ({
+  attempts: [],
+  sessionAverages: [],
+  behavioralStories: defaultBehavioralStories,
+});
+
+const modeLabel = (mode: ProgressMode) => mode;
 
 const shuffle = <T,>(items: T[]) =>
   [...items]
@@ -231,6 +371,8 @@ export default function Home({
 }: HomeProps = {}) {
   const router = useRouter();
   const pathname = usePathname();
+  const { openUserProfile, signOut } = useClerk();
+  const { user } = useUser();
   const navRef = useRef<HTMLElement>(null);
   const [config, setConfig] = useState<SessionConfig>(() => ({
     ...defaultConfig,
@@ -263,6 +405,15 @@ export default function Home({
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState("");
   const [screen, setScreen] = useState<Screen>(initialScreen);
+  const [profileData, setProfileData] = useState<StoredProfileData>(() =>
+    emptyProfileData(),
+  );
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const [shareStatus, setShareStatus] = useState("");
+  const shareRef = useRef<HTMLDivElement>(null);
+  const [expandedQuestionMode, setExpandedQuestionMode] = useState<
+    "M&I 400 Questions" | "Behavioral Practice" | null
+  >(null);
 
   const goTo = (nextScreen: Screen, nextMode?: PracticeMode) => {
     const practiceRoute = modeRoutes[nextMode ?? config.practiceMode];
@@ -282,6 +433,348 @@ export default function Home({
     setScreen(nextScreen);
     router.push(route);
   };
+
+  useEffect(() => {
+    const storedProfile = localStorage.getItem(profileStorageKey);
+
+    if (!storedProfile) return;
+
+    try {
+      const parsedProfile = JSON.parse(storedProfile) as Partial<StoredProfileData>;
+      queueMicrotask(() => {
+        setProfileData({
+          attempts: parsedProfile.attempts ?? [],
+          sessionAverages: parsedProfile.sessionAverages ?? [],
+          behavioralStories: normalizeBehavioralStories(
+            parsedProfile.behavioralStories,
+          ),
+        });
+      });
+    } catch {
+      localStorage.removeItem(profileStorageKey);
+    }
+  }, []);
+
+  const saveProfileData = (nextProfileData: StoredProfileData) => {
+    setProfileData(nextProfileData);
+    localStorage.setItem(profileStorageKey, JSON.stringify(nextProfileData));
+  };
+
+  useEffect(() => {
+    if (!user) return;
+
+    let isCurrent = true;
+
+    const loadAccountData = async () => {
+      try {
+        const response = await fetch("/api/account-data");
+
+        if (!response.ok) return;
+
+        const data = await response.json() as Partial<StoredProfileData>;
+
+        if (!isCurrent) return;
+
+        saveProfileData({
+          attempts: data.attempts ?? [],
+          sessionAverages: data.sessionAverages ?? [],
+          behavioralStories: normalizeBehavioralStories(data.behavioralStories),
+        });
+      } catch {
+        // Keep local progress available if the network/database is unavailable.
+      }
+    };
+
+    void loadAccountData();
+
+    void fetch("/api/account-profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        profile: {
+          email: user.primaryEmailAddress?.emailAddress ?? null,
+          name: user.fullName || user.username || null,
+          imageUrl: user.imageUrl ?? null,
+        },
+      }),
+    });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [user]);
+
+  const recordAttempt = (
+    mode: ProgressMode,
+    questionId: string,
+    question: string,
+    score: number,
+  ) => {
+    const roundedScore = Math.round(score);
+    const matchingAttempts = profileData.attempts.filter(
+      (attempt) => attempt.mode === mode && attempt.questionId === questionId,
+    );
+    const bestExistingAttempt = matchingAttempts.sort(
+      (first, second) => second.score - first.score,
+    )[0];
+
+    if (bestExistingAttempt && roundedScore <= bestExistingAttempt.score) {
+      saveProfileData({
+        ...profileData,
+        attempts: [
+          bestExistingAttempt,
+          ...profileData.attempts.filter(
+            (attempt) => attempt.mode !== mode || attempt.questionId !== questionId,
+          ),
+        ].slice(0, 250),
+      });
+
+      return;
+    }
+
+    const nextAttempt: ProgressAttempt = {
+      id: `${mode}-${questionId}-${Date.now()}`,
+      mode,
+      questionId,
+      question,
+      score: roundedScore,
+      answeredAt: new Date().toISOString(),
+    };
+
+    saveProfileData({
+      ...profileData,
+      attempts: [
+        nextAttempt,
+        ...profileData.attempts.filter(
+          (attempt) => attempt.mode !== mode || attempt.questionId !== questionId,
+        ),
+      ].slice(0, 250),
+    });
+
+    if (user) {
+      void fetch("/api/attempts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ attempt: nextAttempt }),
+      });
+    }
+  };
+
+  const recordSessionAverage = (sessionAnswers: SessionAnswer[]) => {
+    if (sessionAnswers.length === 0) return;
+
+    const completedAt = new Date().toISOString();
+    const averageScore = Math.round(
+      sessionAnswers.reduce((total, item) => total + item.grade.score, 0) /
+        sessionAnswers.length,
+    );
+    const nextSessionAverage: SessionAverageRecord = {
+      id: `${config.practiceMode}-${completedAt}`,
+      mode: config.practiceMode,
+      averageScore,
+      questionCount: sessionAnswers.length,
+      completedAt,
+    };
+    const sameModeSessions = [
+      nextSessionAverage,
+      ...profileData.sessionAverages.filter(
+        (sessionAverage) => sessionAverage.mode === config.practiceMode,
+      ),
+    ].slice(0, 10);
+    const otherModeSessions = profileData.sessionAverages.filter(
+      (sessionAverage) => sessionAverage.mode !== config.practiceMode,
+    );
+
+    saveProfileData({
+      ...profileData,
+      sessionAverages: [...sameModeSessions, ...otherModeSessions],
+    });
+
+    if (user) {
+      void fetch("/api/session-averages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionAverage: nextSessionAverage }),
+      });
+    }
+  };
+
+  const updateBehavioralStory = (
+    storyId: string,
+    field: keyof Omit<BehavioralStory, "id">,
+    value: string,
+  ) => {
+    const nextProfileData = {
+      ...profileData,
+      behavioralStories: profileData.behavioralStories.map((story) =>
+        story.id === storyId ? { ...story, [field]: value } : story,
+      ).slice(0, 8),
+    };
+
+    saveProfileData(nextProfileData);
+
+    if (user) {
+      void fetch("/api/account-data", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          behavioralStories: nextProfileData.behavioralStories,
+        }),
+      });
+    }
+  };
+
+  const updateBehavioralStoryNotes = (storyId: string, value: string) => {
+    const nextProfileData = {
+      ...profileData,
+      behavioralStories: profileData.behavioralStories.map((story) =>
+        story.id === storyId
+          ? { ...story, situation: value, action: "", result: "" }
+          : story,
+      ).slice(0, 8),
+    };
+
+    saveProfileData(nextProfileData);
+
+    if (user) {
+      void fetch("/api/account-data", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          behavioralStories: nextProfileData.behavioralStories,
+        }),
+      });
+    }
+  };
+
+  const deleteBehavioralStory = (storyId: string) => {
+    const story = profileData.behavioralStories.find(
+      (candidate) => candidate.id === storyId,
+    );
+
+    if (!story) return;
+
+    if (
+      storyHasUserContent(story) &&
+      !window.confirm("Delete this behavioral story?")
+    ) {
+      return;
+    }
+
+    const nextProfileData = {
+      ...profileData,
+      behavioralStories: profileData.behavioralStories.filter(
+        (candidate) => candidate.id !== storyId,
+      ),
+    };
+
+    saveProfileData(nextProfileData);
+
+    if (user) {
+      void fetch("/api/account-data", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          behavioralStories: nextProfileData.behavioralStories,
+        }),
+      });
+    }
+  };
+
+  const addBehavioralStory = () => {
+    if (profileData.behavioralStories.length >= 8) return;
+
+    const storyNumber = profileData.behavioralStories.length + 1;
+    const nextProfileData = {
+      ...profileData,
+      behavioralStories: [
+        ...profileData.behavioralStories,
+        {
+          id: `story-${Date.now()}`,
+          title: `Story ${storyNumber}`,
+          situation: "",
+          action: "",
+          result: "",
+        },
+      ],
+    };
+
+    saveProfileData(nextProfileData);
+
+    if (user) {
+      void fetch("/api/account-data", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          behavioralStories: nextProfileData.behavioralStories,
+        }),
+      });
+    }
+  };
+
+  const sharePage = async (target: "sms" | "copy" | "snapchat" | "instagram" | "linkedin" | "email") => {
+    const shareUrl = window.location.href;
+    const shareText =
+      "Practice finance technicals, M&I questions, market scenarios, and behavioral interviews.";
+    const encodedUrl = encodeURIComponent(shareUrl);
+    const encodedText = encodeURIComponent(`${shareText} ${shareUrl}`);
+
+    try {
+      if (target === "copy") {
+        await navigator.clipboard.writeText(shareUrl);
+        setShareStatus("Copied");
+        return;
+      }
+
+      if (target === "snapchat" || target === "instagram") {
+        await navigator.clipboard.writeText(shareUrl);
+        setShareStatus("Copied");
+        window.open(
+          target === "snapchat"
+            ? "https://www.snapchat.com/"
+            : "https://www.instagram.com/",
+          "_blank",
+          "noopener,noreferrer",
+        );
+        return;
+      }
+
+      const urls = {
+        sms: `sms:?&body=${encodedText}`,
+        linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
+        email: `mailto:?subject=${encodeURIComponent("Market Technicals Practice")}&body=${encodedText}`,
+      };
+
+      window.open(urls[target], "_blank", "noopener,noreferrer");
+      setIsShareOpen(false);
+    } catch {
+      setShareStatus("Copy failed");
+    }
+  };
+
+  useEffect(() => {
+    if (!isShareOpen) return;
+
+    const closeShareMenu = (event: MouseEvent | TouchEvent) => {
+      if (
+        event.target instanceof Node &&
+        shareRef.current?.contains(event.target)
+      ) {
+        return;
+      }
+
+      setIsShareOpen(false);
+      setShareStatus("");
+    };
+
+    document.addEventListener("mousedown", closeShareMenu);
+    document.addEventListener("touchstart", closeShareMenu);
+
+    return () => {
+      document.removeEventListener("mousedown", closeShareMenu);
+      document.removeEventListener("touchstart", closeShareMenu);
+    };
+  }, [isShareOpen]);
 
   useEffect(() => {
     const normalizedPath = pathname.toLowerCase();
@@ -309,6 +802,8 @@ export default function Home({
       nextScreen = "behavioral";
     } else if (normalizedPath === "/prep") {
       nextScreen = "prep";
+    } else if (normalizedPath === "/account") {
+      nextScreen = "account";
     } else if (normalizedPath === "/") {
       nextScreen = "home";
     }
@@ -461,6 +956,7 @@ export default function Home({
         currentIndex,
         answers,
       });
+      recordSessionAverage(answers);
       goTo("results");
       return;
     }
@@ -674,6 +1170,12 @@ export default function Home({
         throw new Error(data.error ?? "Unable to grade the answer.");
       }
 
+      recordAttempt(
+        "M&I 400 Questions",
+        currentMiQuestion.id,
+        currentMiQuestion.question,
+        data.score,
+      );
       setMiGrade(data);
       setMiFollowUps([]);
       setShowMiSample(true);
@@ -794,6 +1296,12 @@ export default function Home({
         throw new Error(data.error ?? "Unable to grade the answer.");
       }
 
+      recordAttempt(
+        "Behavioral Practice",
+        currentBehavioralQuestion.id,
+        currentBehavioralQuestion.question,
+        data.score,
+      );
       setBehavioralGrade(data);
       setBehavioralFollowUps([]);
       setShowBehavioralSample(true);
@@ -827,14 +1335,86 @@ export default function Home({
   const selectedMode = modeDetails[config.practiceMode];
   const isPracticeScreen =
     screen === "setup" || screen === "quiz" || screen === "results";
+  const progressModes: ProgressMode[] = [
+    "M&I 400 Questions",
+    "Technical Questions",
+    "Market Scenarios",
+    "Mixed Practice",
+    "Behavioral Practice",
+  ];
+  const progressByMode = progressModes.map((mode) => {
+    const modeAttempts = profileData.attempts.filter((attempt) => attempt.mode === mode);
+    const modeSessions = profileData.sessionAverages.filter(
+      (sessionAverage) => sessionAverage.mode === mode,
+    );
+    const isDetailedMode =
+      mode === "M&I 400 Questions" || mode === "Behavioral Practice";
+    const completed = isDetailedMode
+      ? new Set(modeAttempts.map((attempt) => attempt.questionId)).size
+      : modeSessions.length;
+    const average = isDetailedMode
+      ? modeAttempts.length > 0
+        ? Math.round(
+            modeAttempts.reduce((total, attempt) => total + attempt.score, 0) /
+              modeAttempts.length,
+          )
+        : 0
+      : modeSessions.length > 0
+        ? Math.round(
+            modeSessions.reduce(
+              (total, sessionAverage) => total + sessionAverage.averageScore,
+              0,
+            ) / modeSessions.length,
+          )
+        : 0;
+
+    return {
+      mode,
+      completed,
+      average,
+      attempts: modeAttempts.length,
+      sessions: modeSessions.length,
+      isDetailedMode,
+    };
+  });
+  const totalCompleted = new Set(
+    profileData.attempts.map((attempt) => `${attempt.mode}:${attempt.questionId}`),
+  ).size + profileData.sessionAverages.length;
+  const allScores = [
+    ...profileData.attempts.map((attempt) => attempt.score),
+    ...profileData.sessionAverages.map((sessionAverage) => sessionAverage.averageScore),
+  ];
+  const totalAverage =
+    allScores.length > 0
+      ? Math.round(
+          allScores.reduce((total, score) => total + score, 0) / allScores.length,
+        )
+      : 0;
+  const regularSessionAverages = profileData.sessionAverages
+    .filter((sessionAverage) =>
+      ["Technical Questions", "Market Scenarios", "Mixed Practice"].includes(
+        sessionAverage.mode,
+      ),
+    )
+    .slice(0, 10);
+  const completedMiQuestionIds = new Set(
+    profileData.attempts
+      .filter((attempt) => attempt.mode === "M&I 400 Questions")
+      .map((attempt) => attempt.questionId),
+  );
+  const completedBehavioralQuestionIds = new Set(
+    profileData.attempts
+      .filter((attempt) => attempt.mode === "Behavioral Practice")
+      .map((attempt) => attempt.questionId),
+  );
 
   return (
     <main className="min-h-screen bg-[#f7f7f4] text-ink">
       <header className="border-b border-[#6288b4] bg-mint text-ink">
-        <div className="mx-auto flex min-h-20 w-full max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
+        <div className="flex min-h-16 w-full items-center gap-5 px-4 py-2 sm:px-7 lg:px-12">
           <button
             onClick={reset}
-            className="flex h-14 w-32 items-center text-left text-[1.45rem] font-black leading-[0.82] tracking-normal text-black"
+            className="flex h-12 w-28 shrink-0 items-center text-left text-[1.22rem] font-black leading-[0.82] tracking-normal text-black sm:w-36 sm:text-[1.42rem]"
             aria-label="Market Technicals home"
           >
             Market
@@ -843,79 +1423,157 @@ export default function Home({
           </button>
           <nav
             ref={navRef}
-            className="flex flex-1 items-center justify-start gap-5 overflow-x-auto font-sans text-[1.02rem] font-medium lg:justify-center lg:gap-8 [&_button]:shrink-0 [&_button]:whitespace-nowrap"
+            className="flex min-w-0 flex-1 flex-wrap items-center overflow-hidden font-sans text-[0.95rem] font-medium lg:text-[1.02rem] [&_button]:whitespace-nowrap"
           >
-            <button
-              onClick={() => goTo("mi")}
-              className={screen === "mi" || screen === "miQuiz" ? "underline decoration-2 underline-offset-4" : "hover:underline"}
-            >
-              M&I 400 Questions
-            </button>
-            <button
-              onClick={() => goTo("setup", "Technical Questions")}
-              className={
-                isPracticeScreen && config.practiceMode === "Technical Questions"
-                  ? "underline decoration-2 underline-offset-4"
-                  : "hover:underline"
-              }
-            >
-              Technical Questions
-            </button>
-            <button
-              onClick={() => goTo("setup", "Market Scenarios")}
-              className={
-                isPracticeScreen && config.practiceMode === "Market Scenarios"
-                  ? "underline decoration-2 underline-offset-4"
-                  : "hover:underline"
-              }
-            >
-              Market Scenarios
-            </button>
-            <button
-              onClick={() => goTo("setup", "Mixed Practice")}
-              className={
-                isPracticeScreen && config.practiceMode === "Mixed Practice"
-                  ? "underline decoration-2 underline-offset-4"
-                  : "hover:underline"
-              }
-            >
-              Mixed Practice
-            </button>
-            <button
-              onClick={() => goTo("behavioral")}
-              className={
-                screen === "behavioral" || screen === "behavioralQuiz"
-                  ? "underline decoration-2 underline-offset-4"
-                  : "hover:underline"
-              }
-            >
-              Behavioral Practice
-            </button>
-            <button
-              onClick={() => goTo("prep")}
-              className={
-                screen === "prep"
-                  ? "underline decoration-2 underline-offset-4"
-                  : "hover:underline"
-              }
-            >
-              Prep
-            </button>
+            <div className="flex min-w-0 items-center gap-x-6 gap-y-2 lg:gap-x-8">
+              <button
+                onClick={() => goTo("mi")}
+                className={screen === "mi" || screen === "miQuiz" ? "underline decoration-2 underline-offset-4" : "hover:underline"}
+              >
+                M&I 400 Questions
+              </button>
+              <button
+                onClick={() => goTo("setup", "Technical Questions")}
+                className={
+                  isPracticeScreen && config.practiceMode === "Technical Questions"
+                    ? "underline decoration-2 underline-offset-4"
+                    : "hover:underline"
+                }
+              >
+                Technical Questions
+              </button>
+              <button
+                onClick={() => goTo("setup", "Market Scenarios")}
+                className={
+                  isPracticeScreen && config.practiceMode === "Market Scenarios"
+                    ? "underline decoration-2 underline-offset-4"
+                    : "hover:underline"
+                }
+              >
+                Market Scenarios
+              </button>
+            </div>
+            <div className="hidden flex-1 lg:block" />
+            <div className="flex min-w-0 items-center gap-x-6 gap-y-2 lg:gap-x-8">
+              <button
+                onClick={() => goTo("setup", "Mixed Practice")}
+                className={
+                  isPracticeScreen && config.practiceMode === "Mixed Practice"
+                    ? "underline decoration-2 underline-offset-4"
+                    : "hover:underline"
+                }
+              >
+                Mixed Practice
+              </button>
+              <button
+                onClick={() => goTo("behavioral")}
+                className={
+                  screen === "behavioral" || screen === "behavioralQuiz"
+                    ? "underline decoration-2 underline-offset-4"
+                    : "hover:underline"
+                }
+              >
+                Behavioral Practice
+              </button>
+              <button
+                onClick={() => goTo("prep")}
+                className={
+                  screen === "prep"
+                    ? "underline decoration-2 underline-offset-4"
+                    : "hover:underline"
+                }
+              >
+                Prep
+              </button>
+            </div>
           </nav>
+          <div className="ml-auto hidden shrink-0 items-center gap-3 sm:flex">
+            <Show when="signed-out">
+              <SignInButton mode="modal">
+                <button className="inline-flex h-11 items-center justify-center gap-2 border-2 border-black bg-mint px-4 font-sans text-sm font-black text-black transition hover:bg-[#89a9cf]">
+                  <UserCircle size={16} />
+                  Sign In
+                </button>
+              </SignInButton>
+            </Show>
+            <Show when="signed-in">
+              <button
+                onClick={() => goTo("account")}
+                className={`inline-flex h-11 items-center justify-center gap-2 border px-3 font-sans text-sm font-black transition ${
+                  screen === "account"
+                    ? "border-black bg-mint text-black shadow-terminal"
+                    : "border-black bg-mint text-black hover:bg-[#89a9cf]"
+                }`}
+              >
+                {user?.imageUrl ? (
+                  <Image
+                    src={user.imageUrl}
+                    alt=""
+                    width={22}
+                    height={22}
+                    unoptimized
+                    className="h-5 w-5 rounded-full object-cover ring-1 ring-black/20"
+                  />
+                ) : (
+                  <UserCircle size={16} />
+                )}
+                Profile
+              </button>
+            </Show>
+          </div>
         </div>
       </header>
 
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 pb-8 pt-11 sm:px-6 lg:px-8">
         <header className="border-b border-line pb-8">
           <div>
-            <div className="mb-4 inline-flex items-center gap-2 border border-mint bg-mint/15 px-3 py-1 text-xs font-black uppercase text-ink">
-              <LineChart size={14} />
-              Interview intelligence
-            </div>
             <h1 className="max-w-5xl font-['Times_New_Roman',Georgia,serif] text-5xl font-normal leading-[0.94] tracking-normal text-black sm:text-7xl lg:text-8xl">
               Market Technicals Practice
             </h1>
-            <p className="mt-5 max-w-3xl text-lg leading-8 text-steel">
+            <div ref={shareRef} className="relative mt-3 inline-block">
+              {isShareOpen && (
+                <div className="absolute bottom-full left-0 z-20 mb-4 w-[25rem] bg-black px-6 py-5 text-white shadow-terminal">
+                  <div className="grid grid-cols-6 gap-3">
+                    <ShareOption label="SMS" onClick={() => void sharePage("sms")}>
+                      <SmsLogo />
+                    </ShareOption>
+                    <ShareOption label="Copy link" onClick={() => void sharePage("copy")}>
+                      <Link size={21} strokeWidth={3} />
+                    </ShareOption>
+                    <ShareOption label="Snapchat" onClick={() => void sharePage("snapchat")}>
+                      <SnapchatLogo />
+                    </ShareOption>
+                    <ShareOption label="Instagram" onClick={() => void sharePage("instagram")}>
+                      <InstagramLogo />
+                    </ShareOption>
+                    <ShareOption label="LinkedIn" onClick={() => void sharePage("linkedin")}>
+                      <LinkedInLogo />
+                    </ShareOption>
+                    <ShareOption label="Email" onClick={() => void sharePage("email")}>
+                      <EmailLogo />
+                    </ShareOption>
+                  </div>
+                  {shareStatus && (
+                    <div className="mt-3 text-center text-xs font-black uppercase tracking-[0.12em] text-white/70">
+                      {shareStatus}
+                    </div>
+                  )}
+                  <div className="absolute -bottom-3 left-14 h-0 w-0 border-l-[13px] border-r-[13px] border-t-[13px] border-l-transparent border-r-transparent border-t-black" />
+                </div>
+              )}
+              <button
+                onClick={() => {
+                  setIsShareOpen((open) => !open);
+                  setShareStatus("");
+                }}
+                className="inline-flex items-center gap-1 font-sans text-base font-semibold leading-none text-black transition hover:text-steel"
+                aria-expanded={isShareOpen}
+              >
+                Share
+                <FilledShareArrow />
+              </button>
+            </div>
+            <p className="mt-6 max-w-3xl text-lg leading-8 text-steel">
               Finance technical interview preparation that connects accounting,
               valuation, M&A, LBOs, capital markets, and market events into realistic
               spoken-answer practice.
@@ -964,6 +1622,236 @@ export default function Home({
           </section>
         )}
 
+        {screen === "account" && (
+          <section className="grid gap-5 lg:grid-cols-[0.36fr_0.64fr]">
+            <div className="border border-line bg-panel p-5 shadow-terminal">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center border border-mint bg-mint/10 text-mint">
+                  <Lock size={19} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-black text-black">
+                    <Show when="signed-in">Profile</Show>
+                    <Show when="signed-out">Secure sign in</Show>
+                  </h2>
+                  <Show when="signed-out">
+                    <p className="text-sm text-steel">
+                      Continue with email, Google, or your enabled providers.
+                    </p>
+                  </Show>
+                </div>
+              </div>
+
+              <Show when="signed-in">
+                <div className="mt-5 grid gap-4">
+                  <div className="border border-line bg-white p-4">
+                    <div className="text-xs font-black uppercase tracking-[0.14em] text-steel">
+                      Signed in as
+                    </div>
+                    <div className="mt-2 text-2xl font-black text-black">
+                      {user?.fullName || user?.username || "Market Technicals user"}
+                    </div>
+                    <div className="mt-1 text-sm text-steel">
+                      {user?.primaryEmailAddress?.emailAddress}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => openUserProfile()}
+                    className="flex w-full items-center gap-3 border border-line bg-white p-3 text-left transition hover:border-mint hover:bg-mint/10"
+                  >
+                    {user?.imageUrl ? (
+                      <Image
+                        src={user.imageUrl}
+                        alt=""
+                        width={36}
+                        height={36}
+                        unoptimized
+                        className="h-9 w-9 border border-line object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-9 w-9 items-center justify-center border border-line bg-mint/10 text-mint">
+                        <UserCircle size={20} />
+                      </div>
+                    )}
+                    <span className="text-sm text-steel">
+                      Manage your profile, security, and sign-in options.
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void signOut({ redirectUrl: "/" })}
+                    className="inline-flex h-11 items-center justify-center gap-2 border border-line bg-white px-4 font-black text-ink transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800"
+                  >
+                    <LogOut size={18} />
+                    Sign Out
+                  </button>
+                </div>
+              </Show>
+
+              <Show when="signed-out">
+                <div className="mt-5 grid gap-4">
+                  <SignInButton mode="modal">
+                    <button className="inline-flex h-12 items-center justify-center gap-2 border border-line bg-white px-4 font-black text-ink transition hover:border-mint">
+                      <UserCircle size={18} />
+                      Sign In
+                    </button>
+                  </SignInButton>
+                  <SignUpButton mode="modal">
+                    <button className="inline-flex h-12 items-center justify-center gap-2 bg-mint px-5 font-black text-ink transition hover:bg-[#89a9cf]">
+                      Create Account
+                      <ArrowRight size={18} />
+                    </button>
+                  </SignUpButton>
+                  <p className="border border-line bg-white p-3 text-sm leading-6 text-steel">
+                    Email/password and social login options are controlled from your Clerk
+                    dashboard for the linked Market-Technicals app.
+                  </p>
+                </div>
+              </Show>
+            </div>
+
+            <div className="grid gap-5">
+              <div className="border border-line bg-panel p-5 shadow-terminal">
+                <div className="flex flex-col gap-4 border-b border-line pb-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h2 className="text-3xl font-black text-black">Progress dashboard</h2>
+                    <p className="mt-2 text-sm leading-6 text-steel">
+                      Completed questions, prior scores, and average score by mode.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 text-center">
+                    <ResultBlock label="Done" value={`${totalCompleted}`} />
+                    <ResultBlock
+                      label="Average"
+                      value={totalAverage ? `${totalAverage}/100` : "--"}
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-5 grid gap-3 md:grid-cols-2">
+                  {progressByMode.map((stat) => (
+                    <div key={stat.mode} className="border border-line bg-white p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <h3 className="font-black text-black">{modeLabel(stat.mode)}</h3>
+                          <p className="mt-1 text-xs uppercase tracking-[0.12em] text-steel">
+                            {stat.isDetailedMode
+                              ? `${stat.attempts} scored attempts`
+                              : `${stat.sessions} saved sessions`}
+                          </p>
+                        </div>
+                        <div className={`text-3xl font-semibold ${scoreColor(stat.average)}`}>
+                          {stat.average || "--"}
+                        </div>
+                      </div>
+                      <div className="mt-4 h-2 bg-[#e5e8eb]">
+                        <div
+                          className="h-2 bg-mint"
+                          style={{ width: `${Math.min(stat.average, 100)}%` }}
+                        />
+                      </div>
+                      <p className="mt-3 text-sm text-steel">
+                        {stat.isDetailedMode
+                          ? `${stat.completed} unique questions completed.`
+                          : `${stat.completed} session averages saved.`}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-5 border border-line bg-white p-4">
+                  <h3 className="font-black text-black">Recent session averages</h3>
+                  <div className="mt-3 grid max-h-72 gap-2 overflow-y-auto">
+                    {regularSessionAverages.length === 0 ? (
+                      <p className="text-sm text-steel">
+                        Complete a Technical, Market, or Mixed session to save an average.
+                      </p>
+                    ) : (
+                      regularSessionAverages.map((sessionAverage) => (
+                        <div
+                          key={sessionAverage.id}
+                          className="grid gap-2 border border-line bg-panel p-3 text-sm md:grid-cols-[0.28fr_1fr_auto]"
+                        >
+                          <span className="font-bold text-steel">{sessionAverage.mode}</span>
+                          <span className="text-ink">
+                            {sessionAverage.questionCount} question session
+                          </span>
+                          <span className={scoreColor(sessionAverage.averageScore)}>
+                            {sessionAverage.averageScore}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-5 grid gap-3 lg:grid-cols-2">
+                  {(["M&I 400 Questions", "Behavioral Practice"] as const).map((mode) => {
+                    const modeAttempts = profileData.attempts.filter(
+                      (attempt) => attempt.mode === mode,
+                    );
+                    const isExpanded = expandedQuestionMode === mode;
+
+                    return (
+                      <div key={mode} className="border border-line bg-white p-4">
+                        <button
+                          onClick={() =>
+                            setExpandedQuestionMode(isExpanded ? null : mode)
+                          }
+                          className="flex w-full items-center justify-between gap-3 text-left"
+                        >
+                          <div>
+                            <h3 className="font-black text-black">{mode}</h3>
+                            <p className="mt-1 text-sm text-steel">
+                              {modeAttempts.length} saved question scores
+                            </p>
+                          </div>
+                          <ChevronDown
+                            size={20}
+                            className={`shrink-0 transition ${isExpanded ? "rotate-180" : ""}`}
+                          />
+                        </button>
+                        {isExpanded && (
+                          <div className="mt-4 grid max-h-96 gap-2 overflow-y-auto">
+                            {modeAttempts.length === 0 ? (
+                              <p className="text-sm text-steel">
+                                No saved question scores yet.
+                              </p>
+                            ) : (
+                              modeAttempts.map((attempt) => (
+                                <div
+                                  key={attempt.id}
+                                  className="grid gap-2 border border-line bg-panel p-3 text-sm md:grid-cols-[1fr_auto]"
+                                >
+                                  <span className="line-clamp-2 text-ink">
+                                    {attempt.question}
+                                  </span>
+                                  <span className={scoreColor(attempt.score)}>
+                                    {attempt.score}
+                                  </span>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <BehavioralStoriesPanel
+                stories={profileData.behavioralStories}
+                onChange={updateBehavioralStory}
+                onNotesChange={updateBehavioralStoryNotes}
+                onDelete={deleteBehavioralStory}
+                onAdd={addBehavioralStory}
+              />
+            </div>
+          </section>
+        )}
+
         {screen === "mi" && (
           <section className="grid gap-5 lg:grid-cols-[0.42fr_0.58fr]">
             <div className="border border-line bg-panel p-5 shadow-terminal">
@@ -1000,7 +1888,17 @@ export default function Home({
             <div className="max-h-[34rem] overflow-y-auto border border-line bg-white p-4">
               <div className="mb-3 flex items-center justify-between gap-3 border-b border-line pb-3">
                 <div>
-                  <h3 className="font-black text-black">Question bank</h3>
+                  <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
+                    <h3 className="font-black text-black">Question bank</h3>
+                    <button
+                      type="button"
+                      onClick={() => goTo("account")}
+                      className="appearance-none border-0 bg-transparent p-0 text-left text-sm font-medium text-steel transition hover:text-black hover:underline"
+                    >
+                      <Show when="signed-in">*Check Profile for Progress Stats*</Show>
+                      <Show when="signed-out">*Sign-in to Track & Improve*</Show>
+                    </button>
+                  </div>
                   <span className="text-sm text-steel">
                     {mi400Questions.length} questions
                   </span>
@@ -1008,18 +1906,35 @@ export default function Home({
                 <ShuffleToggle active={miShuffle} onClick={() => setMiShuffle(!miShuffle)} />
               </div>
               <div className="grid gap-2">
-                {mi400Questions.map((question, index) => (
-                  <button
-                    key={question.id}
-                    onClick={() => openMiQuestion(index)}
-                    className="border border-line bg-panel p-3 text-left transition hover:border-mint"
-                  >
-                    <div className="text-xs font-bold uppercase text-steel">
-                      Question {index + 1} · p. {question.page}
-                    </div>
-                    <div className="mt-1 text-sm leading-6 text-ink">{question.question}</div>
-                  </button>
-                ))}
+                {mi400Questions.map((question, index) => {
+                  const isCompleted = completedMiQuestionIds.has(question.id);
+
+                  return (
+                    <button
+                      key={question.id}
+                      onClick={() => openMiQuestion(index)}
+                      className={`border p-3 text-left transition hover:border-mint ${
+                        isCompleted
+                          ? "border-mint bg-mint/10"
+                          : "border-line bg-panel"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-3 text-xs font-bold uppercase text-steel">
+                        <span>
+                          Question {index + 1} · p. {question.page}
+                        </span>
+                        {isCompleted && (
+                          <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center border border-mint bg-mint text-black">
+                            <Check size={13} strokeWidth={3} />
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-1 text-sm leading-6 text-ink">
+                        {question.question}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </section>
@@ -1214,7 +2129,17 @@ export default function Home({
             <div className="max-h-[34rem] overflow-y-auto border border-line bg-white p-4">
               <div className="mb-3 flex items-center justify-between gap-3 border-b border-line pb-3">
                 <div>
-                  <h3 className="font-black text-black">Behavioral bank</h3>
+                  <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
+                    <h3 className="font-black text-black">Behavioral bank</h3>
+                    <button
+                      type="button"
+                      onClick={() => goTo("account")}
+                      className="appearance-none border-0 bg-transparent p-0 text-left text-sm font-medium text-steel transition hover:text-black hover:underline"
+                    >
+                      <Show when="signed-in">*Check Profile for Progress Stats*</Show>
+                      <Show when="signed-out">*Sign-in to Track & Improve*</Show>
+                    </button>
+                  </div>
                   <span className="text-sm text-steel">
                     {behavioralQuestions.length} questions
                   </span>
@@ -1225,18 +2150,35 @@ export default function Home({
                 />
               </div>
               <div className="grid gap-2">
-                {behavioralQuestions.map((question, index) => (
-                  <button
-                    key={question.id}
-                    onClick={() => openBehavioralQuestion(index)}
-                    className="border border-line bg-panel p-3 text-left transition hover:border-mint"
-                  >
-                    <div className="text-xs font-bold uppercase text-steel">
-                      Question {index + 1} · p. {question.page}
-                    </div>
-                    <div className="mt-1 text-sm leading-6 text-ink">{question.question}</div>
-                  </button>
-                ))}
+                {behavioralQuestions.map((question, index) => {
+                  const isCompleted = completedBehavioralQuestionIds.has(question.id);
+
+                  return (
+                    <button
+                      key={question.id}
+                      onClick={() => openBehavioralQuestion(index)}
+                      className={`border p-3 text-left transition hover:border-mint ${
+                        isCompleted
+                          ? "border-mint bg-mint/10"
+                          : "border-line bg-panel"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-3 text-xs font-bold uppercase text-steel">
+                        <span>
+                          Question {index + 1} · p. {question.page}
+                        </span>
+                        {isCompleted && (
+                          <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center border border-mint bg-mint text-black">
+                            <Check size={13} strokeWidth={3} />
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-1 text-sm leading-6 text-ink">
+                        {question.question}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </section>
@@ -1706,7 +2648,17 @@ export default function Home({
           <section className="border border-line bg-panel p-5 shadow-terminal">
             <div className="flex flex-col gap-4 border-b border-line pb-5 md:flex-row md:items-center md:justify-between">
               <div>
-                <h2 className="text-3xl font-black text-black">Session results</h2>
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
+                  <h2 className="text-3xl font-black text-black">Session results</h2>
+                  <button
+                    type="button"
+                    onClick={() => goTo("account")}
+                    className="appearance-none border-0 bg-transparent p-0 text-left text-sm font-medium text-steel transition hover:text-black hover:underline"
+                  >
+                    <Show when="signed-in">*Check Profile for Progress Stats*</Show>
+                    <Show when="signed-out">*Sign-in to Track & Improve*</Show>
+                  </button>
+                </div>
                 <p className="mt-2 text-steel">
                   {answers.length} questions answered across{" "}
                   {new Set(answers.map((item) => item.question.category)).size} categories.
@@ -1943,6 +2895,188 @@ function HomeOption({
       <h2 className="mt-5 text-2xl font-black text-black">{title}</h2>
       <p className="mt-2 text-sm leading-6 text-steel">{description}</p>
     </button>
+  );
+}
+
+function ShareOption({
+  label,
+  children,
+  onClick,
+}: {
+  label: string;
+  children: React.ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-center font-sans text-sm font-black text-black transition hover:bg-mint"
+      aria-label={`Share via ${label}`}
+      title={label}
+    >
+      {children}
+    </button>
+  );
+}
+
+function FilledShareArrow() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 120 96"
+      className="block h-5 w-8 fill-current"
+    >
+      <path d="M8 82C11.5 45.5 39 24.8 64 25.1V9.8c0-3.4 4.1-5.1 6.5-2.7l38 37.6c1.9 1.9 1.9 5 0 6.9l-38 37.3c-2.4 2.3-6.5.7-6.5-2.7V65.8C39.9 65.7 21.8 72 10.7 84.1 9.5 85.5 7.8 83.9 8 82Z" />
+    </svg>
+  );
+}
+
+function SmsLogo() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 42 42" className="h-8 w-8 fill-current">
+      <path d="M21 6C11.6 6 4 12.3 4 20.1c0 4.9 3 9.2 7.6 11.7l-1.2 4.7c-.2.9.8 1.6 1.6 1.1l5.3-3.2c1.2.2 2.4.3 3.7.3 9.4 0 17-6.3 17-14.1S30.4 6 21 6Z" />
+      <text x="21" y="24.7" textAnchor="middle" className="fill-white font-sans text-[9px] font-black">
+        SMS
+      </text>
+    </svg>
+  );
+}
+
+function SnapchatLogo() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 42 42" className="h-8 w-8 translate-y-[1px]">
+      <path
+        d="M21 5.5c5.1 0 8.6 3.7 8.6 8.9v4.4c0 1.3 1.3 2.2 3.1 2.8 1.5.5 2 2.4.7 3.4-1.6 1.2-3.2 1.9-5.1 2.2-.9.1-1.5.7-1.9 1.5-.8 1.5-2.4 2.9-5.4 2.9s-4.6-1.4-5.4-2.9c-.4-.8-1-1.3-1.9-1.5-1.9-.3-3.5-1-5.1-2.2-1.3-1-.8-2.9.7-3.4 1.8-.6 3.1-1.5 3.1-2.8v-4.4c0-5.2 3.5-8.9 8.6-8.9Z"
+        className="fill-current"
+      />
+    </svg>
+  );
+}
+
+function InstagramLogo() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 42 42" className="h-8 w-8 fill-none stroke-current">
+      <rect x="9" y="9" width="24" height="24" rx="7" strokeWidth="3.2" />
+      <circle cx="21" cy="21" r="6" strokeWidth="3.2" />
+      <circle cx="28" cy="14" r="2.1" className="fill-current stroke-none" />
+    </svg>
+  );
+}
+
+function LinkedInLogo() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 42 42" className="h-8 w-8 fill-current">
+      <path d="M10 17h6v17h-6V17Zm3-8.5a3.4 3.4 0 1 1 0 6.8 3.4 3.4 0 0 1 0-6.8ZM19 17h5.7v2.3c.9-1.4 2.7-2.8 5.5-2.8 4 0 6.8 2.7 6.8 8.2V34h-6v-8.4c0-2.4-1-3.7-2.9-3.7-2 0-3.1 1.4-3.1 3.7V34h-6V17Z" />
+    </svg>
+  );
+}
+
+function EmailLogo() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 42 42" className="h-8 w-8 fill-none stroke-current">
+      <rect x="7" y="11" width="28" height="20" rx="3" strokeWidth="3" />
+      <path d="m9 14 12 9 12-9" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function BehavioralStoriesPanel({
+  stories,
+  onChange,
+  onNotesChange,
+  onDelete,
+  onAdd,
+}: {
+  stories: BehavioralStory[];
+  onChange: (
+    storyId: string,
+    field: keyof Omit<BehavioralStory, "id">,
+    value: string,
+  ) => void;
+  onNotesChange: (storyId: string, value: string) => void;
+  onDelete: (storyId: string) => void;
+  onAdd: () => void;
+}) {
+  return (
+    <div className="border border-line bg-panel p-5 shadow-terminal">
+      <div className="flex flex-col gap-4 border-b border-line pb-5 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-3xl font-black text-black">Behavioral stories</h2>
+          <p className="mt-2 text-sm leading-6 text-steel">
+            Keep up to 8 reference stories ready while practicing fit questions.
+          </p>
+        </div>
+        <button
+          onClick={onAdd}
+          disabled={stories.length >= 8}
+          className="inline-flex h-11 items-center justify-center gap-2 bg-mint px-4 font-black text-ink transition hover:bg-[#89a9cf] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Plus size={18} />
+          {stories.length >= 8 ? "Story Limit" : "Add Story"}
+        </button>
+      </div>
+
+      <div className="mt-5 grid gap-4">
+        {stories.map((story, index) => (
+          <div key={story.id} className="border border-line bg-white p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center border border-mint bg-mint/10 text-sm font-black text-mint">
+                {index + 1}
+              </div>
+              <input
+                value={story.title}
+                onChange={(event) => onChange(story.id, "title", event.target.value)}
+                onFocus={() => {
+                  if (exampleStoryTitles.has(story.title)) {
+                    onChange(story.id, "title", "");
+                  }
+                }}
+                placeholder={`Story ${index + 1} title`}
+                aria-label={`Story ${index + 1} title`}
+                className="h-11 w-full border border-line bg-panel px-3 font-black text-black outline-none focus:border-mint"
+              />
+              <button
+                type="button"
+                onClick={() => onDelete(story.id)}
+                className="inline-flex h-11 w-11 shrink-0 items-center justify-center border border-line bg-panel text-steel transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800"
+                aria-label={`Delete story ${index + 1}`}
+                title="Delete story"
+              >
+                <Trash2 size={18} />
+              </button>
+            </div>
+            <StoryField
+              value={[story.situation, story.action, story.result]
+                .filter(Boolean)
+                .join("\n\n")}
+              onChange={(value) => onNotesChange(story.id, value)}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function StoryField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="mt-4 block">
+      <span className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-steel">
+        Reference notes
+      </span>
+      <textarea
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder="Add anything useful for this story."
+        className="min-h-36 w-full resize-y border border-line bg-panel p-3 text-sm leading-6 text-ink outline-none placeholder:text-slate-500 focus:border-mint"
+      />
+    </label>
   );
 }
 

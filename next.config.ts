@@ -15,6 +15,9 @@ const appRoutes = [
 ];
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: process.cwd(),
+  },
   async rewrites() {
     return appRoutes.map((source) => ({
       source,
