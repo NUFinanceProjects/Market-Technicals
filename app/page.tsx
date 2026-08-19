@@ -1776,11 +1776,8 @@ export default function Home({
                 onClick={() => goTo("prep")}
               />
             </section>
-            <section className="border-t border-line pt-5">
-              <h2 className="text-2xl font-black text-black">
-                Finance interview prep for technicals, markets, and spoken answers
-              </h2>
-              <p className="mt-3 max-w-4xl text-base leading-7 text-steel">
+            <section className="border-t border-line pt-4">
+              <p className="max-w-4xl text-sm leading-6 text-steel">
                 Market Technicals helps candidates practice investment banking and finance
                 interview questions across accounting, valuation, DCF, M&A, LBOs, private
                 equity, capital markets, and market scenario analysis. Use it for quick reps,
