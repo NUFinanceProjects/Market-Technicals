@@ -3594,7 +3594,7 @@ function SeoGuideLink() {
         Looking for the full interview prep overview?{" "}
         <a
           href="/investment-banking-interview-questions"
-          className="font-semibold text-black underline underline-offset-4"
+          className="text-ink/80 transition hover:text-black hover:underline hover:underline-offset-4"
         >
           Read the investment banking interview questions guide
         </a>
