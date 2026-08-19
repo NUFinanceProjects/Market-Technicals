@@ -3,19 +3,113 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
+const siteUrl = "https://www.market-technicals.com";
+const siteDescription =
+  "Investment banking and finance interview practice for technical questions, market scenarios, M&I 400 questions, valuation, M&A, LBOs, accounting, and spoken-answer prep.";
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      name: "Market Technicals",
+      url: siteUrl,
+      logo: `${siteUrl}/icon-192.png`,
+      sameAs: [siteUrl],
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      name: "Market Technicals",
+      url: siteUrl,
+      description: siteDescription,
+      publisher: {
+        "@id": `${siteUrl}/#organization`,
+      },
+      inLanguage: "en-US",
+    },
+    {
+      "@type": "WebApplication",
+      "@id": `${siteUrl}/#webapp`,
+      name: "Market Technicals",
+      url: siteUrl,
+      applicationCategory: "EducationalApplication",
+      operatingSystem: "Web",
+      description: siteDescription,
+      publisher: {
+        "@id": `${siteUrl}/#organization`,
+      },
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+      },
+      featureList: [
+        "M&I 400 finance interview question practice",
+        "Technical interview question practice",
+        "Market scenario interview practice",
+        "Behavioral interview practice",
+        "Progress tracking for signed-in users",
+      ],
+    },
+    {
+      "@type": "ItemList",
+      "@id": `${siteUrl}/#practice-sections`,
+      name: "Market Technicals Practice Sections",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "M&I 400 Questions",
+          url: `${siteUrl}/MI400`,
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Technical Questions",
+          url: `${siteUrl}/TechnicalQuestions`,
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: "Market Scenarios",
+          url: `${siteUrl}/MarketScenarios`,
+        },
+        {
+          "@type": "ListItem",
+          position: 4,
+          name: "Mixed Practice",
+          url: `${siteUrl}/MixedPractice`,
+        },
+        {
+          "@type": "ListItem",
+          position: 5,
+          name: "Behavioral Practice",
+          url: `${siteUrl}/BehavioralPractice`,
+        },
+        {
+          "@type": "ListItem",
+          position: 6,
+          name: "Prep",
+          url: `${siteUrl}/Prep`,
+        },
+      ],
+    },
+  ],
+};
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.market-technicals.com"),
+  metadataBase: new URL(siteUrl),
   title: "Market Technicals",
-  description:
-    "Investment banking and finance interview practice for technical questions, market scenarios, M&I 400 questions, valuation, M&A, LBOs, accounting, and spoken-answer prep.",
+  description: siteDescription,
   alternates: {
     canonical: "/",
   },
   openGraph: {
     title: "Market Technicals",
-    description:
-      "Investment banking and finance interview practice for technical questions, market scenarios, M&I 400 questions, valuation, M&A, LBOs, accounting, and spoken-answer prep.",
-    url: "https://www.market-technicals.com",
+    description: siteDescription,
+    url: siteUrl,
     siteName: "Market Technicals",
     images: [
       {
@@ -30,8 +124,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Market Technicals",
-    description:
-      "Investment banking and finance interview practice for technical questions, market scenarios, M&I 400 questions, valuation, M&A, LBOs, accounting, and spoken-answer prep.",
+    description: siteDescription,
     images: ["/opengraph-image"],
   },
   manifest: "/site.webmanifest",
@@ -73,6 +166,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData).replace(/</g, "\\u003c"),
+          }}
+        />
         <ClerkProvider>
           {children}
           <Analytics />
