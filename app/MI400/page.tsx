@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BreadcrumbJsonLd } from "../BreadcrumbJsonLd";
 import Home from "../page";
 
 export const metadata: Metadata = {
@@ -17,5 +18,10 @@ export const metadata: Metadata = {
 };
 
 export default function MI400Page() {
-  return <Home initialScreen="mi" />;
+  return (
+    <>
+      <BreadcrumbJsonLd name="M&I 400 Questions" path="/MI400" />
+      <Home initialScreen="mi" />
+    </>
+  );
 }

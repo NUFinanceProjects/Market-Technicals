@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BreadcrumbJsonLd } from "../BreadcrumbJsonLd";
 import Home from "../page";
 
 export const metadata: Metadata = {
@@ -18,9 +19,12 @@ export const metadata: Metadata = {
 
 export default function MarketScenariosPage() {
   return (
-    <Home
-      initialScreen="setup"
-      initialPracticeMode="Market Scenarios"
-    />
+    <>
+      <BreadcrumbJsonLd name="Market Scenarios" path="/MarketScenarios" />
+      <Home
+        initialScreen="setup"
+        initialPracticeMode="Market Scenarios"
+      />
+    </>
   );
 }

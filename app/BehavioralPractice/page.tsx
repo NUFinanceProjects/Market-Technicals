@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BreadcrumbJsonLd } from "../BreadcrumbJsonLd";
 import Home from "../page";
 
 export const metadata: Metadata = {
@@ -17,5 +18,10 @@ export const metadata: Metadata = {
 };
 
 export default function BehavioralPracticePage() {
-  return <Home initialScreen="behavioral" />;
+  return (
+    <>
+      <BreadcrumbJsonLd name="Behavioral Practice" path="/BehavioralPractice" />
+      <Home initialScreen="behavioral" />
+    </>
+  );
 }
