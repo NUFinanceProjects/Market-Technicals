@@ -2035,7 +2035,7 @@ export const mi400Questions: MIQuestion[] = [
     "sourceNumber": 1,
     "page": 184,
     "question": "How does Project Finance differ from Corporate Finance?",
-    "sampleAnswer": "Here’s a complete answer in tabular format:"
+    "sampleAnswer": "Project Finance is based on a specific asset or project, such as a power plant, airport, toll road, or mine, while Corporate Finance is based on the entire company.\nIn Project Finance, the borrower is often a special-purpose vehicle, and lenders are repaid mainly from the project’s cash flows rather than the sponsor’s full corporate balance sheet. Debt may be non-recourse or limited-recourse, so lenders focus heavily on the project’s contracts, construction risk, operating risk, reserves, and downside scenarios.\nIn Corporate Finance, the borrower is the company itself, and lenders or investors look at the entire business, including its diversified revenue, EBITDA, free cash flow, assets, credit profile, and overall capital structure.\nThe modeling is also different: Project Finance models focus on Cash Flow Available for Debt Service, DSCR / LLCR, debt sizing and sculpting, construction periods, reserves, and project-level returns. Corporate Finance models focus more on company-wide financial statements, valuation, leverage, credit metrics, EPS, and broader financing decisions."
   },
   {
     "id": "mi-291",

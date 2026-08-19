@@ -12,7 +12,7 @@ import {
   BookOpen,
   Check,
   CircleAlert,
-  FileQuestion,
+  Dice5,
   LineChart,
   Loader2,
   LogOut,
@@ -179,22 +179,56 @@ const routeModes: Record<string, PracticeMode> = {
 
 const modeDetails: Record<
   PracticeMode,
-  { description: string; icon: React.ReactNode }
+  {
+    title: string;
+    description: string;
+    setupTitle: string;
+    seoSummary: string;
+    focusAreas: string[];
+    icon: React.ReactNode;
+  }
 > = {
   "Technical Questions": {
+    title: "Finance Technical Interview Questions",
     description:
       "Classic finance interview questions across accounting, valuation, DCF, M&A, LBOs, and enterprise value.",
-    icon: <FileQuestion size={20} />,
+    setupTitle: "Start session",
+    seoSummary:
+      "Practice investment banking technical interview questions with spoken-answer prompts across accounting, valuation, DCF modeling, M&A analysis, LBO / private equity, enterprise value, equity value, and capital markets. This mode is built for students preparing for finance interviews who want fast technical reps with feedback.",
+    focusAreas: [
+      "Accounting and three-statement interview questions",
+      "Valuation, DCF, enterprise value, and equity value",
+      "M&A, LBO, private equity, and capital markets technicals",
+    ],
+    icon: <TechnicalLensIcon size={24} />,
   },
   "Market Scenarios": {
+    title: "Market Scenario Interview Practice",
     description:
       "Market-event prompts that ask you to reason through companies, valuation, deals, and capital markets.",
+    setupTitle: "Start session",
+    seoSummary:
+      "Practice market scenario interview questions that connect current events, public companies, rates, credit markets, IPOs, M&A, private equity, valuation, and capital markets judgment. This mode helps candidates explain how market news affects businesses, transactions, and investment decisions.",
+    focusAreas: [
+      "Current-market and company-specific interview scenarios",
+      "Deal, IPO, credit, rates, and capital markets reasoning",
+      "Valuation and diligence responses tied to real business context",
+    ],
     icon: <LineChart size={20} />,
   },
   "Mixed Practice": {
+    title: "Mixed Finance Interview Practice",
     description:
       "A realistic blend of technical questions and market scenarios for full interview-style practice.",
-    icon: <RefreshCcw size={20} />,
+    setupTitle: "Start session",
+    seoSummary:
+      "Run mixed finance interview practice that combines technical questions with market scenarios, so each session feels closer to a real investment banking, private equity, or corporate finance interview. Use this mode when you want accounting, valuation, M&A, LBO, capital markets, and market-awareness practice in one flow.",
+    focusAreas: [
+      "Balanced technical and market scenario interview reps",
+      "Accounting, valuation, M&A, LBO, and capital markets coverage",
+      "Spoken-answer practice with scoring and follow-up prompts",
+    ],
+    icon: <Dice5 size={20} />,
   },
 };
 
@@ -1373,6 +1407,73 @@ export default function Home({
       .filter((attempt) => attempt.mode === "Behavioral Practice")
       .map((attempt) => attempt.questionId),
   );
+  const isMiScreen = screen === "mi" || screen === "miQuiz";
+  const isBehavioralScreen = screen === "behavioral" || screen === "behavioralQuiz";
+  const isPrepScreen = screen === "prep";
+  const isModeHeader = isPracticeScreen || isMiScreen || isBehavioralScreen || isPrepScreen;
+  const pageHeaderTitle = isPracticeScreen
+    ? selectedMode.title
+    : isMiScreen
+      ? "M&I 400 Questions"
+      : isBehavioralScreen
+        ? "Behavioral Practice"
+        : isPrepScreen
+          ? "Prep Resources"
+          : "Market Technicals Practice";
+  const pageHeaderDescription = isPracticeScreen
+    ? selectedMode.description
+    : isMiScreen
+      ? "Technical interview questions with exact sample answers and page references."
+      : isBehavioralScreen
+        ? "Prepare fit, story, leadership, weakness, and deal-experience answers from the M&I behavioral set."
+        : isPrepScreen
+          ? "A focused resource stack for question banks, technical reading, structured course prep, and daily market awareness."
+          : "Finance technical interview preparation that connects accounting, valuation, M&A, LBOs, capital markets, and market events into realistic spoken-answer practice.";
+  const shareControl = (
+    <div ref={shareRef} className="relative mt-3 inline-block">
+      {isShareOpen && (
+        <div className="absolute left-0 top-full z-20 mt-3 w-[calc(100vw-2rem)] max-w-[25rem] bg-black px-6 py-5 text-white shadow-terminal">
+          <div className="grid grid-cols-6 gap-3">
+            <ShareOption label="SMS" onClick={() => void sharePage("sms")}>
+              <SmsLogo />
+            </ShareOption>
+            <ShareOption label="Copy link" onClick={() => void sharePage("copy")}>
+              <Link size={21} strokeWidth={3} />
+            </ShareOption>
+            <ShareOption label="Snapchat" onClick={() => void sharePage("snapchat")}>
+              <SnapchatLogo />
+            </ShareOption>
+            <ShareOption label="Instagram" onClick={() => void sharePage("instagram")}>
+              <InstagramLogo />
+            </ShareOption>
+            <ShareOption label="LinkedIn" onClick={() => void sharePage("linkedin")}>
+              <LinkedInLogo />
+            </ShareOption>
+            <ShareOption label="Email" onClick={() => void sharePage("email")}>
+              <EmailLogo />
+            </ShareOption>
+          </div>
+          {shareStatus && (
+            <div className="mt-3 text-center text-xs font-black uppercase tracking-[0.12em] text-white/70">
+              {shareStatus}
+            </div>
+          )}
+          <div className="absolute -top-3 left-14 h-0 w-0 border-b-[13px] border-l-[13px] border-r-[13px] border-b-black border-l-transparent border-r-transparent" />
+        </div>
+      )}
+      <button
+        onClick={() => {
+          setIsShareOpen((open) => !open);
+          setShareStatus("");
+        }}
+        className="inline-flex items-center gap-1 font-sans text-base font-semibold leading-none text-black transition hover:text-steel"
+        aria-expanded={isShareOpen}
+      >
+        Share
+        <FilledShareArrow />
+      </button>
+    </div>
+  );
 
   return (
     <main className="min-h-screen bg-[#f7f7f4] text-ink">
@@ -1602,101 +1703,87 @@ export default function Home({
       </header>
 
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 pb-8 pt-11 sm:px-6 lg:px-8">
-        <header className={`border-b border-line pb-8 ${screen === "home" ? "" : "hidden sm:block"}`}>
+        <header className={`border-b border-line ${isModeHeader ? "pb-5" : "pb-8"}`}>
           <div>
-            <h1 className="max-w-5xl font-['Times_New_Roman',Georgia,serif] text-5xl font-normal leading-[0.94] tracking-normal text-black sm:text-7xl lg:text-8xl">
-              Market Technicals Practice
+            <h1
+              className={`max-w-5xl font-['Times_New_Roman',Georgia,serif] font-normal tracking-normal text-black ${
+                isModeHeader
+                  ? "text-4xl leading-[0.98] sm:text-5xl lg:text-6xl"
+                  : "text-5xl leading-[0.94] sm:text-7xl lg:text-8xl"
+              }`}
+            >
+              {pageHeaderTitle}
             </h1>
-            <div ref={shareRef} className="relative mt-3 inline-block">
-              {isShareOpen && (
-                <div className="absolute bottom-full left-0 z-20 mb-4 w-[25rem] bg-black px-6 py-5 text-white shadow-terminal">
-                  <div className="grid grid-cols-6 gap-3">
-                    <ShareOption label="SMS" onClick={() => void sharePage("sms")}>
-                      <SmsLogo />
-                    </ShareOption>
-                    <ShareOption label="Copy link" onClick={() => void sharePage("copy")}>
-                      <Link size={21} strokeWidth={3} />
-                    </ShareOption>
-                    <ShareOption label="Snapchat" onClick={() => void sharePage("snapchat")}>
-                      <SnapchatLogo />
-                    </ShareOption>
-                    <ShareOption label="Instagram" onClick={() => void sharePage("instagram")}>
-                      <InstagramLogo />
-                    </ShareOption>
-                    <ShareOption label="LinkedIn" onClick={() => void sharePage("linkedin")}>
-                      <LinkedInLogo />
-                    </ShareOption>
-                    <ShareOption label="Email" onClick={() => void sharePage("email")}>
-                      <EmailLogo />
-                    </ShareOption>
-                  </div>
-                  {shareStatus && (
-                    <div className="mt-3 text-center text-xs font-black uppercase tracking-[0.12em] text-white/70">
-                      {shareStatus}
-                    </div>
-                  )}
-                  <div className="absolute -bottom-3 left-14 h-0 w-0 border-l-[13px] border-r-[13px] border-t-[13px] border-l-transparent border-r-transparent border-t-black" />
-                </div>
-              )}
-              <button
-                onClick={() => {
-                  setIsShareOpen((open) => !open);
-                  setShareStatus("");
-                }}
-                className="inline-flex items-center gap-1 font-sans text-base font-semibold leading-none text-black transition hover:text-steel"
-                aria-expanded={isShareOpen}
-              >
-                Share
-                <FilledShareArrow />
-              </button>
-            </div>
-            <p className="mt-6 max-w-3xl text-lg leading-8 text-steel">
-              Finance technical interview preparation that connects accounting,
-              valuation, M&A, LBOs, capital markets, and market events into realistic
-              spoken-answer practice.
+            {shareControl}
+            <p
+              className={`max-w-3xl leading-7 text-steel ${
+                isModeHeader ? "mt-4 text-base" : "mt-6 text-lg"
+              }`}
+            >
+              {pageHeaderDescription}
             </p>
           </div>
         </header>
 
         {screen === "home" && (
-          <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <HomeOption
-              icon={<BookOpen size={22} />}
-              title="M&I 400 Questions"
-              description="Work through the technical interview guide question bank with exact sample answers and page references."
-              onClick={() => goTo("mi")}
-            />
-            <HomeOption
-              icon={<FileQuestion size={22} />}
-              title="Technical Questions"
-              description="Classic accounting, valuation, DCF, M&A, LBO, and capital markets technical practice."
-              onClick={() => goTo("setup", "Technical Questions")}
-            />
-            <HomeOption
-              icon={<LineChart size={22} />}
-              title="Market Scenarios"
-              description="Practice connecting market events to companies, valuation, deals, and capital markets."
-              onClick={() => goTo("setup", "Market Scenarios")}
-            />
-            <HomeOption
-              icon={<RefreshCcw size={22} />}
-              title="Mixed Practice"
-              description="Blend technical questions and market-scenario prompts for a more realistic interview flow."
-              onClick={() => goTo("setup", "Mixed Practice")}
-            />
-            <HomeOption
-              icon={<MessageSquareText size={22} />}
-              title="Behavioral Practice"
-              description="Prepare fit, story, leadership, weakness, and deal-experience answers from the M&I behavioral set."
-              onClick={() => goTo("behavioral")}
-            />
-            <HomeOption
-              icon={<Newspaper size={22} />}
-              title="Prep Resources"
-              description="Open the curated resources list for question banks, course prep, and market reading."
-              onClick={() => goTo("prep")}
-            />
-          </section>
+          <>
+            <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <HomeOption
+                icon={<BookOpen size={22} />}
+                title="M&I 400 Questions"
+                description="Work through the technical interview guide question bank with exact sample answers and page references."
+                href="/MI400"
+                onClick={() => goTo("mi")}
+              />
+              <HomeOption
+                icon={<TechnicalLensIcon size={28} />}
+                title="Finance Technical Questions"
+                description="Practice accounting, valuation, DCF, M&A, LBO, enterprise value, and capital markets interview questions."
+                href="/TechnicalQuestions"
+                onClick={() => goTo("setup", "Technical Questions")}
+              />
+              <HomeOption
+                icon={<LineChart size={22} />}
+                title="Market Scenario Interview Practice"
+                description="Practice reasoning through market events, public companies, rates, credit, IPOs, M&A, valuation, and deal decisions."
+                href="/MarketScenarios"
+                onClick={() => goTo("setup", "Market Scenarios")}
+              />
+              <HomeOption
+                icon={<Dice5 size={22} />}
+                title="Mixed Finance Interview Practice"
+                description="Blend technical questions and market-scenario prompts for realistic investment banking and finance interview prep."
+                href="/MixedPractice"
+                onClick={() => goTo("setup", "Mixed Practice")}
+              />
+              <HomeOption
+                icon={<MessageSquareText size={22} />}
+                title="Behavioral Practice"
+                description="Prepare fit, story, leadership, weakness, and deal-experience answers from the M&I behavioral set."
+                href="/BehavioralPractice"
+                onClick={() => goTo("behavioral")}
+              />
+              <HomeOption
+                icon={<Newspaper size={22} />}
+                title="Prep Resources"
+                description="Open the curated resources list for question banks, course prep, and market reading."
+                href="/Prep"
+                onClick={() => goTo("prep")}
+              />
+            </section>
+            <section className="border-t border-line pt-5">
+              <h2 className="text-2xl font-black text-black">
+                Finance interview prep for technicals, markets, and spoken answers
+              </h2>
+              <p className="mt-3 max-w-4xl text-base leading-7 text-steel">
+                Market Technicals helps candidates practice investment banking and finance
+                interview questions across accounting, valuation, DCF, M&A, LBOs, private
+                equity, capital markets, and market scenario analysis. Use it for quick reps,
+                full mixed sessions, M&I 400 question review, and realistic spoken-answer
+                feedback.
+              </p>
+            </section>
+          </>
         )}
 
         {screen === "account" && (
@@ -2175,10 +2262,8 @@ export default function Home({
                   <MessageSquareText size={20} />
                 </div>
                 <div>
-                  <h2 className="text-xl font-black text-black">Behavioral Practice</h2>
-                  <p className="text-sm text-steel">
-                    Behavioral questions from the M&I guide, with exact sample answers.
-                  </p>
+                  <h2 className="text-xl font-black text-black">Choose your first story prompt</h2>
+                  <p className="text-sm text-steel">Start at the beginning or shuffle through the bank.</p>
                 </div>
               </div>
               <p className="mt-5 text-sm leading-6 text-steel">
@@ -2392,16 +2477,6 @@ export default function Home({
 
         {screen === "prep" && (
           <section className="grid gap-6">
-            <div className="border-b border-line pb-5">
-              <h2 className="font-['Times_New_Roman',Georgia,serif] text-5xl font-normal leading-none text-black sm:text-6xl">
-                Prep Resources
-              </h2>
-              <p className="mt-4 max-w-3xl text-base leading-7 text-steel">
-                A focused resource stack for interview prep: question banks, core technical
-                reading, structured course platforms, and daily market-reading sources.
-              </p>
-            </div>
-
             <div className="grid gap-5">
               <ResourceGroup
                 title="Question Bank"
@@ -2469,23 +2544,34 @@ export default function Home({
 
         {screen === "setup" && (
           <section className="max-w-4xl">
+            <div className="mb-5 grid gap-3 md:grid-cols-3">
+              {selectedMode.focusAreas.map((focusArea) => (
+                <div
+                  key={focusArea}
+                  className="border-l-2 border-mint bg-transparent py-1 pl-3 text-sm font-semibold leading-6 text-steel"
+                >
+                  {focusArea}
+                </div>
+              ))}
+            </div>
+
             <div className="border border-line bg-panel p-5 shadow-terminal">
               <div className="mb-5 flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center border border-mint bg-mint/10 text-mint">
                   {selectedMode.icon}
                 </div>
                 <div>
-                  <h2 className="text-xl font-black text-black">Start practice</h2>
+                  <h3 className="text-xl font-black text-black">{selectedMode.setupTitle}</h3>
                   <p className="text-sm text-steel">
                     Current mode: {config.practiceMode}.
                   </p>
-                  <p className="mt-1 max-w-2xl text-sm leading-6 text-steel">
-                    {selectedMode.description}
-                  </p>
                 </div>
               </div>
+              <p className="max-w-3xl text-sm leading-6 text-steel">
+                {selectedMode.seoSummary}
+              </p>
 
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="mt-5 grid gap-4 border-t border-line pt-5 md:grid-cols-2">
                 <Field label="Category">
                   <select
                     value={config.category}
@@ -2950,28 +3036,59 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
+function TechnicalLensIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 32 32"
+      role="img"
+      aria-hidden="true"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <circle cx="13.2" cy="13.2" r="9" stroke="currentColor" strokeWidth="3" />
+      <path
+        d="M20 20L28 28"
+        stroke="currentColor"
+        strokeWidth="3.8"
+        strokeLinecap="round"
+      />
+      <path d="M8.6 17.2V12.2" stroke="currentColor" strokeWidth="2.2" strokeLinecap="butt" />
+      <path d="M13.1 17.2V9.3" stroke="currentColor" strokeWidth="2.2" strokeLinecap="butt" />
+      <path d="M17.6 17.2V13.4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="butt" />
+    </svg>
+  );
+}
+
 function HomeOption({
   icon,
   title,
   description,
+  href,
   onClick,
 }: {
   icon: React.ReactNode;
   title: string;
   description: string;
+  href: string;
   onClick: () => void;
 }) {
   return (
-    <button
-      onClick={onClick}
-      className="min-h-48 border border-line bg-white p-5 text-left transition hover:border-mint"
+    <a
+      href={href}
+      onClick={(event) => {
+        event.preventDefault();
+        onClick();
+      }}
+      className="block min-h-48 border border-line bg-white p-5 text-left transition hover:border-mint"
     >
       <div className="flex h-11 w-11 items-center justify-center border border-mint bg-mint/10 text-mint">
         {icon}
       </div>
       <h2 className="mt-5 text-2xl font-black text-black">{title}</h2>
       <p className="mt-2 text-sm leading-6 text-steel">{description}</p>
-    </button>
+    </a>
   );
 }
 

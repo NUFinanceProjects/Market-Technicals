@@ -2,16 +2,16 @@ import type { Metadata } from "next";
 import Home from "../page";
 
 export const metadata: Metadata = {
-  title: "Finance Technical Questions | Market Technicals",
+  title: "Finance Technical Interview Questions | Market Technicals",
   description:
-    "Practice finance technical interview questions across accounting, valuation, DCF, M&A, LBOs, enterprise value, and capital markets.",
+    "Practice investment banking technical interview questions across accounting, valuation, DCF, M&A, LBOs, enterprise value, equity value, and capital markets.",
   alternates: {
     canonical: "/TechnicalQuestions",
   },
   openGraph: {
-    title: "Finance Technical Questions | Market Technicals",
+    title: "Finance Technical Interview Questions | Market Technicals",
     description:
-      "Practice finance technical interview questions across accounting, valuation, DCF, M&A, LBOs, enterprise value, and capital markets.",
+      "Practice investment banking technical interview questions across accounting, valuation, DCF, M&A, LBOs, enterprise value, equity value, and capital markets.",
     url: "/TechnicalQuestions",
   },
 };

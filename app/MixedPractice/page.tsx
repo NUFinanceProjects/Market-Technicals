@@ -4,14 +4,14 @@ import Home from "../page";
 export const metadata: Metadata = {
   title: "Mixed Finance Interview Practice | Market Technicals",
   description:
-    "Run realistic mixed finance interview practice with technical questions and market scenarios across accounting, valuation, M&A, LBOs, and capital markets.",
+    "Run mixed finance interview practice with technical questions and market scenarios for investment banking, private equity, valuation, M&A, LBOs, and capital markets.",
   alternates: {
     canonical: "/MixedPractice",
   },
   openGraph: {
     title: "Mixed Finance Interview Practice | Market Technicals",
     description:
-      "Run realistic mixed finance interview practice with technical questions and market scenarios across accounting, valuation, M&A, LBOs, and capital markets.",
+      "Run mixed finance interview practice with technical questions and market scenarios for investment banking, private equity, valuation, M&A, LBOs, and capital markets.",
     url: "/MixedPractice",
   },
 };

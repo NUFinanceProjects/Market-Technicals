@@ -7,14 +7,14 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.market-technicals.com"),
   title: "Market Technicals",
   description:
-    "Finance technical interview preparation that connects accounting, valuation, M&A, LBOs, capital markets, and market events into realistic spoken-answer practice.",
+    "Investment banking and finance interview practice for technical questions, market scenarios, M&I 400 questions, valuation, M&A, LBOs, accounting, and spoken-answer prep.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
     title: "Market Technicals",
     description:
-      "Finance technical interview preparation that connects accounting, valuation, M&A, LBOs, capital markets, and market events into realistic spoken-answer practice.",
+      "Investment banking and finance interview practice for technical questions, market scenarios, M&I 400 questions, valuation, M&A, LBOs, accounting, and spoken-answer prep.",
     url: "https://www.market-technicals.com",
     siteName: "Market Technicals",
     images: [
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Market Technicals",
     description:
-      "Finance technical interview preparation that connects accounting, valuation, M&A, LBOs, capital markets, and market events into realistic spoken-answer practice.",
+      "Investment banking and finance interview practice for technical questions, market scenarios, M&I 400 questions, valuation, M&A, LBOs, accounting, and spoken-answer prep.",
     images: ["/opengraph-image"],
   },
   manifest: "/site.webmanifest",
