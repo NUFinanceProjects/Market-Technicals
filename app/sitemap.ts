@@ -10,6 +10,7 @@ const routes = [
   "/MixedPractice",
   "/BehavioralPractice",
   "/Prep",
+  "/investment-banking-interview-questions",
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

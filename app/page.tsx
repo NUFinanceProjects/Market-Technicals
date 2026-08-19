@@ -1410,6 +1410,11 @@ export default function Home({
   const isMiScreen = screen === "mi" || screen === "miQuiz";
   const isBehavioralScreen = screen === "behavioral" || screen === "behavioralQuiz";
   const isPrepScreen = screen === "prep";
+  const shouldShowGuideLink =
+    screen === "mi" ||
+    screen === "behavioral" ||
+    screen === "prep" ||
+    screen === "setup";
   const isModeHeader = isPracticeScreen || isMiScreen || isBehavioralScreen || isPrepScreen;
   const pageHeaderTitle = isPracticeScreen
     ? selectedMode.title
@@ -2891,6 +2896,8 @@ export default function Home({
             </button>
           </section>
         )}
+
+        {shouldShowGuideLink && <SeoGuideLink />}
       </div>
     </main>
   );
@@ -3577,6 +3584,23 @@ function ResultBlock({ label, value }: { label: string; value: string }) {
       <div className="text-sm text-steel">{label}</div>
       <div className="mt-2 text-xl font-black text-black">{value}</div>
     </div>
+  );
+}
+
+function SeoGuideLink() {
+  return (
+    <aside className="border-t border-line pt-5">
+      <p className="max-w-3xl text-sm leading-6 text-steel">
+        Looking for the full interview prep overview?{" "}
+        <a
+          href="/investment-banking-interview-questions"
+          className="font-semibold text-black underline underline-offset-4"
+        >
+          Read the investment banking interview questions guide
+        </a>
+        .
+      </p>
+    </aside>
   );
 }
 
